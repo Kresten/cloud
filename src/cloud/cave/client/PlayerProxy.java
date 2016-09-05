@@ -200,8 +200,10 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
 
   @Override
   public String getWeather() {
-    // TODO: Exercise - solve the 'weather-client' exercise
-    return "NOT IMPLEMENTED YET";
+    JSONObject requestJson = createRequestObject(MarshalingKeys.GET_WEATHER_METHOD_KEY, null);
+    JSONObject replyJson = requestAndAwaitReply(requestJson);
+    String weather = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+    return weather;
   }
 
   @Override

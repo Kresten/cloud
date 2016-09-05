@@ -39,17 +39,12 @@ public class TestWeatherClient {
     player = (PlayerProxy) loginResult.getPlayer();
   }
 
-  // TODO: Exercise - starting point for the 'weather-client' exercise
   @Test
   public void shouldGetWeatherClientSide() {
     String weather = player.getWeather();
-    
-    assertThat(weather, containsString("NOT IMPLEMENTED YET"));
-  
-    /**
     assertThat(weather, containsString("The weather in AARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
     assertThat(weather, containsString("This report is dated: Thu, 05 Mar 2015 09:38:37 +0100"));
-    */
+
   }
 
 }

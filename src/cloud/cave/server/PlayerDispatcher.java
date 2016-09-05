@@ -113,6 +113,10 @@ public class PlayerDispatcher implements Dispatcher {
 
         reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
       }
+      // === WEATHER
+      else if (methodKey.equals(MarshalingKeys.GET_WEATHER_METHOD_KEY)) {
+        reply = Marshaling.createValidReplyWithReturnValue(player.getWeather());
+      }
       // === EXECUTE
       else if (methodKey.equals(MarshalingKeys.EXECUTE_METHOD_KEY)) {
         String commandName = parameter1;

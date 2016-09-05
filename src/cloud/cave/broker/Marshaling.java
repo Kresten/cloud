@@ -64,6 +64,10 @@ public class Marshaling {
    * 
    * @param playerID
    *          id of the player
+   *
+   * @param sessionID
+   *          id of the session the player is logged in
+   *
    * @param commandKey
    *          key of method to call
    * @param parameter

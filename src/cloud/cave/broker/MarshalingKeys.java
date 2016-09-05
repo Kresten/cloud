@@ -48,7 +48,7 @@ public class MarshalingKeys {
   public static final String GET_EXITSET_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-exit-set";
   public static final String DIG_ROOM_METHOD_KEY = PLAYER_TYPE_PREFIX+"dig-room";
   public static final String EXECUTE_METHOD_KEY = PLAYER_TYPE_PREFIX+"execute";
-  
+
   public static final String GET_WEATHER_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-weather";
   public static final String ADD_MESSAGE_METHOD_KEY = PLAYER_TYPE_PREFIX+"add-message";
   public static final String GET_MESSAGE_LIST_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-message-list";
