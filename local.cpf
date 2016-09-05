@@ -1,0 +1,9 @@
+# Setting everything for InVM IPC (no server) with test doubles
+
+# === Configure for In memory IPC for the client; server require no config
+SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.doubles.AllTestDoubleClientRequestHandler
+
+# === Dummy config of the server IP endpoint
+SKYCAVE_APPSERVER=localhost:37123
+
+# No other properties are necessary, as all are defined within the factory above

@@ -1,0 +1,21 @@
+# root.cpf - Setting everything for InVM IPC (no server) with test doubles
+
+# === Configure for In memory IPC for the client; server require no config
+SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.doubles.AllTestDoubleClientRequestHandler
+
+# === Dummy config of the server IP endpoint
+  SKYCAVE_APPSERVER =  localhost:37145    
+
+# === Inject test doubles for all delegates (Note IP endpoints are dummies)
+
+# = Subscription service 
+SKYCAVE_SUBSCRIPTION_IMPLEMENTATION=cloud.cave.doubles.TestStubSubscriptionService
+SKYCAVE_SUBSCRIPTIONSERVER=localhost:42042
+
+# = Cave storage
+SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.doubles.FakeCaveStorage
+SKYCAVE_DBSERVER=localhost:27017
+
+# = Weather service
+SKYCAVE_WEATHER_IMPLEMENTATION=cloud.cave.doubles.TestStubWeatherService
+SKYCAVE_WEATHERSERVER=localhost:8281

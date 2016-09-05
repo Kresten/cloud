@@ -1,0 +1,5 @@
+# wrong2.cpf - Setting everything for InVM IPC (no server) with test doubles
+
+# === Configure for In memory IPC for the client; server require no config
+set SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.doubles.AllTestDoubleClientRequestHandler
+

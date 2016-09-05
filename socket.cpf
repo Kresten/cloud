@@ -1,0 +1,33 @@
+# Setting everything for socket based connection on 
+# LocalHost with (mostly) test doubles
+
+# === Configure for socket communication on client and app server side
+SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.SocketClientRequestHandler
+SKYCAVE_SERVERREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.SocketServerRequestHandler
+
+# === Configure for server to run on localhost
+SKYCAVE_APPSERVER = localhost:37123
+
+# === Inject test doubles for all delegates (Note IP endpoints are dummies)
+
+# = Subscription service 
+SKYCAVE_SUBSCRIPTION_IMPLEMENTATION = cloud.cave.doubles.TestStubSubscriptionService
+SKYCAVE_SUBSCRIPTIONSERVER = localhost:42042
+
+# = Cave storage
+SKYCAVE_CAVESTORAGE_IMPLEMENTATION = cloud.cave.doubles.FakeCaveStorage
+SKYCAVE_DBSERVER = localhost:27017
+
+# = Weather service
+SKYCAVE_WEATHER_IMPLEMENTATION = cloud.cave.doubles.TestStubWeatherService
+SKYCAVE_WEATHERSERVER = localhost:8182
+
+# = Player session cache - defaults to the simple in memory one which
+# operates correctly in a single server/single threaded non-loaded setting
+SKYCAVE_PLAYERSESSIONCACHE_IMPLEMENTATION = cloud.cave.server.SimpleInMemoryCache
+SKYCAVE_PLAYERSESSIONCACHESERVER = notused:0
+
+# = Inspector implementation - defaults to the simplest in memory one
+SKYCAVE_INSPECTOR_IMPLEMENTATION = cloud.cave.server.SimpleInspector
+SKYCAVE_INSPECTORSERVER = notused:0
+

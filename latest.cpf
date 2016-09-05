@@ -1,0 +1,7 @@
+# The 'latest' CPF file should ALWAYS reflect your most advanced but
+# release stable staging environment revision.
+
+# Hint: To avoid a lot of duplication, use the CHAIN feature of CPFs
+# to include and override configuration parameters
+
+< socket.cpf

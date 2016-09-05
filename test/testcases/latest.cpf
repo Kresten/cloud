@@ -1,0 +1,6 @@
+# latest.cpf - chains two cpfs and overwrites stuff
+
+< test/testcases/root-file.cpf
+< test/testcases/base.cpf
+
+SKYCAVE_PROPERTY1 = wingdings

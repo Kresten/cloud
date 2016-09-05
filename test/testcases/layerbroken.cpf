@@ -1,0 +1,7 @@
+# layer.cpf - chains to non existing file
+< test/testcases/nonexist.cpf
+
+# === Dummy config of the server IP endpoint
+SKYCAVE_APPSERVER =  10.11.85.66:37123      
+
+SKYCAVE_PROPERTY1 = wingdings
