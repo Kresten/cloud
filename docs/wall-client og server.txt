@@ -1,0 +1,13 @@
+﻿Ændrede TestWallClient og TestWall. Tænker det er tilstrækkeligt med en test til en besked og en anden med to beskeder, hvor de kommer i rigtig rækkefølge.
+I PlayerProxy tager addMessage en besked og parser den til JSON. Det skal gribes af serveren.
+Men addMessage returnerer ikke et objekt ligesom alle de andre metoder. Der står i dokumentationen af createValidReplyWithReturnValue, void metoderne bare returnerer den tomme streng.
+Den indsættes altså i PlayerDispatcher, hvor den kalder addMessage-metoden i PlayerServant og returnerer et tomt reply.
+addMessage skal kalde et addMessage-metode i storage.
+Metoderne addWallMessage er tilføjet til CaveStorage interfacet, og dermed og klassen FakeCaveStorage, der implementerer interfacet.
+For at FakeCaveStorage kan skrive til en væg i rummet, skal RoomRecord-klassen udvides til også at have en væg/liste af beskeder. Der er tilføjet en public List<String>. 
+Denne skal initialiseres før den kan skrives til (ellers får man null pointer exceptions). 
+
+getMessageList skal returnere en liste af strings. Den skal lave metodekaldet til JSON, det skal gribes i PlayerDispatcher, der kalder metoden i PlayerServant.
+Så kaldes metoden i storage, der henter listen i en RoomRecord.
+
+TODO, Tror beskederne skal have spillernavn med? "[Mikkel] This is message no. 1"

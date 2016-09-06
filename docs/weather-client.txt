@@ -1,0 +1,4 @@
+Først indsatte vi de udkommenterede test cases i TestWeatherClient.
+
+Herefter benyttede vi metoderne createRequestObject og requestAndAwaitReply i PlayerProxy, hvor metodekaldet var GET_WEATHER_METHOD_KEY fra MarshallingKeys.
+Vi fik en fejl, at metoden ikke var genkendt på serversiden, så vi tilføjede getWeather i PlayerDispatcher.
