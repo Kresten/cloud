@@ -187,15 +187,23 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
 
   @Override
   public void addMessage(String message) {
-    // TODO: Exercise - solve the 'wall' exercise
+    JSONObject requestJson = createRequestObject(MarshalingKeys.ADD_MESSAGE_METHOD_KEY, message);
+    JSONObject replyJson = requestAndAwaitReply(requestJson);
   }
 
   @Override
   public List<String> getMessageList() {
-    // TODO: Exercise - solve the 'wall' exercise
-    List<String> contents = new ArrayList<String>();
-    contents.add("NOT IMPLEMENTED YET");
-    return contents;
+    JSONObject requestJson = createRequestObject(MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY, "");
+    JSONObject replyJson = requestAndAwaitReply(requestJson);
+
+    // The HEAD is not used, the list of player names are stored in the TAIL
+    List<String> messageList = new ArrayList<String>();
+    JSONArray array = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
+    // Convert it into a string list
+    for ( Object item : array ) {
+      messageList.add(item.toString());
+    }
+    return messageList;
   }
 
   @Override

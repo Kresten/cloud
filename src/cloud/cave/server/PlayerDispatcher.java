@@ -113,6 +113,21 @@ public class PlayerDispatcher implements Dispatcher {
 
         reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
       }
+      // === ADD MESSAGE
+      else if (methodKey.equals(MarshalingKeys.ADD_MESSAGE_METHOD_KEY)) {
+        player.addMessage(parameter1);
+        reply = Marshaling.createValidReplyWithReturnValue("");
+      }
+      // === GET MESSAGE LIST
+      else if (methodKey.equals(MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY)) {
+        List<String> messageList = player.getMessageList();
+        String[] asArray = new String[messageList.size()];
+        messageList.toArray(asArray);
+
+        // It is easier to not use the HEAD and just put the array in the TAIL
+        // of the answer
+        reply = Marshaling.createValidReplyWithReturnValue("notused", asArray);
+      }
       // === WEATHER
       else if (methodKey.equals(MarshalingKeys.GET_WEATHER_METHOD_KEY)) {
         reply = Marshaling.createValidReplyWithReturnValue(player.getWeather());

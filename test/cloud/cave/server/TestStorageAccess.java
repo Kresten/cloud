@@ -102,6 +102,16 @@ class SpyCaveStorage implements CaveStorage {
     return decoratee.addRoom(positionString, description);
   }
 
+  @Override
+  public void addMessage(String positionString, String message) {
+
+  }
+
+  @Override
+  public List<String> getMessageList(String positionString) {
+    return null;
+  }
+
 
   public void initialize(ObjectManager objMgr, ServerConfiguration config) {
     decoratee.initialize(objMgr, config);

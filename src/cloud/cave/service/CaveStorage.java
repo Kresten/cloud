@@ -38,6 +38,26 @@ public interface CaveStorage extends ExternalService {
   boolean addRoom(String positionString, RoomRecord description);
 
   /**
+   * Add a message to the wall of the room at a given position.
+   *
+   * @param positionString
+   *          the (x,y,z) of the position encoded as a position string.
+   * @param message
+   *          the text to be added to the wall
+   */
+  void addMessage(String positionString, String message);
+
+  /**
+   * Get the list of messages posted to the wall of the room at a given position.
+   *
+   * @param positionString
+   *          the (x,y,z) of the position encoded as a position string.
+   * @return  the list of messages on the wall
+   */
+  List<String> getMessageList(String positionString);
+
+
+  /**
    * Compute the set of valid exits leading out from a given position
    * 
    * @param positionString

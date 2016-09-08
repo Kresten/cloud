@@ -34,11 +34,18 @@ public class TestWall {
   public void shouldWriteToAndReadWall() {
     player.addMessage("This is message no. 1");
     List<String> wallContents = player.getMessageList();
-    
-    // TODO: Exercise - solve the 'wall' exercise
-
     assertThat( wallContents.size(), is(1));
-    assertThat( wallContents.get(0), containsString("NOT IMPLEMENTED YET"));
+    assertThat( wallContents.get(0), containsString("This is message no. 1"));
+  }
+
+  @Test
+  public void shouldWriteTwoMessagesToAndReadWall() {
+    player.addMessage("This is message no. 1");
+    player.addMessage("This is message no. 2");
+    List<String> wallContents = player.getMessageList();
+    assertThat( wallContents.size(), is(2));
+    assertThat( wallContents.get(0), containsString("This is message no. 1"));
+    assertThat( wallContents.get(1), containsString("This is message no. 2"));
   }
 
 }

@@ -64,6 +64,16 @@ public class FakeCaveStorage implements CaveStorage {
   }
 
   @Override
+  public void addMessage(String positionString, String message) {
+    getRoom(positionString).getMessageList().add(message);
+  }
+
+  @Override
+  public List<String> getMessageList(String positionString) {
+    return getRoom(positionString).getMessageList();
+  }
+
+  @Override
   public List<Direction> getSetOfExitsFromRoom(String positionString) {
     List<Direction> listOfExits = new ArrayList<Direction>();
     Point3 pZero = Point3.parseString(positionString);
