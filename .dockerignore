@@ -1,0 +1,8 @@
+*.md
+.gitignore
+.idea/*
+.git/*
+build/*
+lib/*
+javadoc/*
+TEST-RESULT/*
