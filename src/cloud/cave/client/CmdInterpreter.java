@@ -161,7 +161,7 @@ public class CmdInterpreter {
 
     } else if (command.equals("read")) {
       for (String message : player.getMessageList()){
-        systemOut.print(message);
+        systemOut.println(message);
       }
 
     } else if (command.equals("sys")) {
