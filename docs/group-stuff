@@ -1,0 +1,7 @@
+Crunch3 tag: Europium501_Latvia587
+
+DigitalOcean IP: 138.68.67.18
+
+Nice docker remove all cmd: docker rm `docker ps --no-trunc -aq`
+
+Construct Docker-image from Dockerfile: docker build -t *navn* .

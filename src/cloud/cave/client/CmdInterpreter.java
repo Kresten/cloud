@@ -152,10 +152,17 @@ public class CmdInterpreter {
       }
 
     } else if (command.equals("post") && tokens.length > 1) {
-      systemOut.println("POST awaits implementation");
+      // Compile the message by putting the tokens back into a single string again
+      String message = "";
+      message = mergeTokens(tokens, 1);
+      player.addMessage(message);
+      systemOut.print(message);
+
 
     } else if (command.equals("read")) {
-      systemOut.println("READ awaits implementation");
+      for (String message : player.getMessageList()){
+        systemOut.print(message);
+      }
 
     } else if (command.equals("sys")) {
       systemOut.println("System information:");
