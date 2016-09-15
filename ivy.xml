@@ -26,8 +26,12 @@
 		
     <!-- Apache Commons IO for property reading -->
     <dependency org="commons-io" name="commons-io" rev="2.5"/>
-    
-    <!-- jBCrypt for password prototection -->
+
+    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+    <dependency org="org.apache.httpcomponents" name="httpclient" rev="4.5.2"/>
+
+
+      <!-- jBCrypt for password prototection -->
     <dependency org="org.mindrot" 
                 name="jbcrypt" 
                 rev="0.3m"/>
