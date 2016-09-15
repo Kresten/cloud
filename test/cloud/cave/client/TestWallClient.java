@@ -60,7 +60,7 @@ public class TestWallClient {
     List<String> wallContents = player.getMessageList();
     assertThat( wallContents.size(), is(2));
     assertThat( wallContents.get(0), containsString("This is message no. 1"));
-    assertThat( wallContents.get(0), containsString("This is message no. 2"));
+    assertThat( wallContents.get(1), containsString("This is message no. 2"));
   }
 
 }
