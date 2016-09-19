@@ -166,7 +166,7 @@ public class PlayerServant implements Player {
   private String convertToFormattedString(JSONObject currentObservation) {
 
     String result = null;
-    if (currentObservation.get("authenticated").equals("true")) {
+    if (currentObservation.get("authenticated").equals(true)) {
       String temperature = currentObservation.get("temperature").toString();
       double tempDouble = Double.parseDouble(temperature);
 
