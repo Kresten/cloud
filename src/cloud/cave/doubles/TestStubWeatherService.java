@@ -30,7 +30,7 @@ public class TestStubWeatherService implements WeatherService {
 
     // Validate player id
     if (groupName.equals("grp01")) {
-      weather.put("authenticated", "true");
+      weather.put("authenticated", true);
       weather.put("errorMessage", "OK");
 
       weather.put("windspeed", "1.2");
