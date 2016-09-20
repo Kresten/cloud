@@ -15,26 +15,26 @@ import cloud.cave.service.*;
  * The servant implementation of the Cave (Servant role in Broker). Just as the servant player, this
  * implementation communicates directly with the storage layer to achieve its
  * behavior.
- * 
+ *
  * @author Henrik Baerbak Christensen, Aarhus University.
- * 
+ *
  */
 public class CaveServant implements Cave, Servant {
 
   private ObjectManager objectManager;
-  
+
   private Logger logger;
 
   /**
    * Construct the Cave servant object with the delegates/dependencies given by
    * the object manager.
-   * 
+   *
    * @param objectManager
    *          object manager holding all delegates to collaborate with
    */
   public CaveServant(ObjectManager objectManager) {
     this.objectManager = objectManager;
-    
+
     logger = LoggerFactory.getLogger(CaveServant.class);
   }
 
@@ -42,7 +42,7 @@ public class CaveServant implements Cave, Servant {
    * Given a loginName and password (like '201017201','123') contact the
    * subscription storage to validate that the player is a subscriber. If valid,
    * create the player avatar. Return the result of the login
-   * 
+   *
    * @param loginName
    *          the loginName which the player uses to identify his/her account in
    *          the cave
@@ -64,7 +64,7 @@ public class CaveServant implements Cave, Servant {
       errorMsg="Lookup failed on subscription service due to IPC exception:"+e.getMessage();
       logger.error(errorMsg);
     }
-    
+
     if (subscription==null) {
       return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
     }
@@ -72,13 +72,13 @@ public class CaveServant implements Cave, Servant {
     if (subscription.getErrorCode() == SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN) {
       return new LoginRecord(LoginResult.LOGIN_FAILED_UNKNOWN_SUBSCRIPTION);
     }
-    
+
     // Now the subscription is assumed to be a valid player
     String playerID = subscription.getPlayerID();
-    
+
     // Create id of session as a random UUID
     String sessionID = UUID.randomUUID().toString();
-    
+
     // Enter the player, creating the player's session in the cave
     // (which may overwrite an already ongoing session which is then
     // implicitly invalidated).
@@ -91,10 +91,10 @@ public class CaveServant implements Cave, Servant {
 
     // Create player domain object
     Player player = new PlayerServant(playerID, objectManager);
-    
+
     // Cache the player session for faster lookups
     objectManager.getPlayerSessionCache().add(playerID, player);
-    
+
     // And finalize the login result
     result = new LoginRecord(player, theResult);
 
@@ -111,12 +111,12 @@ public class CaveServant implements Cave, Servant {
   private LoginResult startPlayerSession(SubscriptionRecord subscription,
       String sessionID) {
     LoginResult result = LoginResult.LOGIN_SUCCESS; // Assume success
-    
+
     CaveStorage storage = objectManager.getCaveStorage();
-    
+
     // get the record of the player from storage
     PlayerRecord playerRecord = storage.getPlayerByID(subscription.getPlayerID());
-    
+
     if (playerRecord == null) {
       // Apparently a newly registered player, so create the record
       // and add it to the cave storage
@@ -141,10 +141,10 @@ public class CaveServant implements Cave, Servant {
   @Override
   public LogoutResult logout(String playerID) {
     CaveStorage storage = objectManager.getCaveStorage();
-    
+
     // ensure that the player is known by and in the cave
     PlayerRecord player = storage.getPlayerByID(playerID);
-    
+
     if (!player.isInCave()) {
       return LogoutResult.PLAYER_NOT_IN_CAVE;
     }
@@ -154,10 +154,10 @@ public class CaveServant implements Cave, Servant {
 
     // and update the record in the storage
     storage.updatePlayerRecord(player);
-    
+
     // and clean up the cache
     objectManager.getPlayerSessionCache().remove(playerID);
-    
+
     return LogoutResult.SUCCESS;
   }
 
@@ -168,7 +168,7 @@ public class CaveServant implements Cave, Servant {
     WeatherService weatherService = objectManager.getWeatherService();
     PlayerSessionCache sessionCache = objectManager.getPlayerSessionCache();
     Inspector inspector = objectManager.getInspector();
-    
+
     String cfg = "CaveServant configuration:\n";
     cfg += "  CaveStorage: " + storage.getClass().getName() + "\n";
     cfg += "   - cfg: " + storage.getConfiguration() + "\n";

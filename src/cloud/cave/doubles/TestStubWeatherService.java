@@ -22,7 +22,7 @@ public class TestStubWeatherService implements WeatherService {
   @SuppressWarnings("unchecked")
   @Override
   public JSONObject requestWeather(String groupName, String playerID,
-      Region region) {
+                                   Region region) {
     // Ex of output from the weather service:
     // {"windspeed":"1.8","time":"Wed, 17 Jun 2015 16:50:26 +0200","weather":"Light Rain","winddirection":"ESE","feelslike":"12.5","temperature":"12.5"}
 
@@ -42,7 +42,7 @@ public class TestStubWeatherService implements WeatherService {
     } else {
       weather.put("authenticated", "false");
       weather.put("errorMessage", "GroupName " + groupName + " or playerID "
-          + playerID + " is not authenticated");
+              + playerID + " is not authenticated");
     }
     return weather;
   }
