@@ -60,7 +60,6 @@ public class RealWeatherService implements WeatherService {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 

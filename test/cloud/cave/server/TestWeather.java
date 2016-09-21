@@ -9,6 +9,7 @@ import cloud.cave.config.ObjectManager;
 import cloud.cave.config.StandardObjectManager;
 import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.doubles.FakeWeatherService;
+import cloud.cave.doubles.NullInspector;
 import org.json.simple.JSONObject;
 import org.junit.*;
 
@@ -76,7 +77,33 @@ public class TestWeather {
         Login loginResult = cave.login(loginName, "123");
         player = loginResult.getPlayer();
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Connection timeout. Try again later. ***"));
+    }
 
+    @Test
+    public void shouldTripCircuitBreaker() {
+        CaveServerFactory factory = new AllTestDoubleFactory() {
+            @Override
+            public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
+                WeatherService service = new FakeWeatherService();
+                service.initialize(null, null); // no config object required
+                return service;
+            }
+
+            @Override
+            public Inspector createInspector(ObjectManager objMgr) {
+                return new SimpleInspector();
+            }
+
+        };
+        ObjectManager objMgr = new StandardObjectManager(factory);
+        cave = new CaveServant(objMgr);
+        loginName = "mikkel_aarskort";
+        Login loginResult = cave.login(loginName, "123");
+        player = loginResult.getPlayer();
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Connection timeout. Try again later. ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Connection timeout. Try again later. ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Connection timeout. Try again later. ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Open Circuit) ***"));
     }
 
 }

@@ -38,6 +38,7 @@ public class PlayerServant implements Player {
     private Region region;
     private RoomRecord currentRoom;
     private String position;
+    private CircuitBreaker weatherCircuitBreaker;
 
     private ObjectManager objectManager;
 
@@ -58,7 +59,7 @@ public class PlayerServant implements Player {
         this.ID = playerID;
         this.objectManager = objectManager;
         this.storage = objectManager.getCaveStorage();
-
+        this.weatherCircuitBreaker = new WeatherCircuitBreaker(objectManager);
         refreshFromStorage();
     }
 
@@ -144,14 +145,23 @@ public class PlayerServant implements Player {
     @Override
     public String getWeather() {
         String weather;
+        weatherCircuitBreaker.setInspector(objectManager.getInspector());
         try {
-            JSONObject weatherAsJson =
-                    objectManager.
-                            getWeatherService().
-                            requestWeather(getGroupName(), getID(), getRegion());
-            weather = convertToFormattedString(weatherAsJson);
+            if (weatherCircuitBreaker.getState().equals(CircuitBreakerState.OPEN) && !weatherCircuitBreaker.hasTimeOutPassed(System.currentTimeMillis())){
+                weather = "*** Weather service not available, sorry. (Open Circuit) ***";
+            }
+            else {
+                JSONObject weatherAsJson =
+                        objectManager.
+                                getWeatherService().
+                                requestWeather(getGroupName(), getID(), getRegion());
+                weather = convertToFormattedString(weatherAsJson);
+                if (weatherCircuitBreaker.getState().equals(CircuitBreakerState.HALF_OPEN)){
+                    weatherCircuitBreaker.reset();
+                }
+            }
         } catch (CaveTimeOutException e) {
-
+            weatherCircuitBreaker.incrementFailureCount();
             weather = e.getMessage();
         }
         return weather;
