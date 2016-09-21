@@ -59,7 +59,8 @@ public class PlayerServant implements Player {
         this.ID = playerID;
         this.objectManager = objectManager;
         this.storage = objectManager.getCaveStorage();
-        this.weatherCircuitBreaker = new WeatherCircuitBreaker(objectManager);
+        this.weatherCircuitBreaker = new WeatherCircuitBreaker();
+        weatherCircuitBreaker.setInspector(objectManager.getInspector());
         refreshFromStorage();
     }
 
@@ -145,7 +146,6 @@ public class PlayerServant implements Player {
     @Override
     public String getWeather() {
         String weather;
-        weatherCircuitBreaker.setInspector(objectManager.getInspector());
         try {
             if (weatherCircuitBreaker.getState().equals(CircuitBreakerState.OPEN) && !weatherCircuitBreaker.hasTimeOutPassed(System.currentTimeMillis())){
                 weather = "*** Weather service not available, sorry. (Open Circuit) ***";

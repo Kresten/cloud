@@ -88,12 +88,6 @@ public class TestWeather {
                 service.initialize(null, null); // no config object required
                 return service;
             }
-
-            @Override
-            public Inspector createInspector(ObjectManager objMgr) {
-                return new SimpleInspector();
-            }
-
         };
         ObjectManager objMgr = new StandardObjectManager(factory);
         cave = new CaveServant(objMgr);

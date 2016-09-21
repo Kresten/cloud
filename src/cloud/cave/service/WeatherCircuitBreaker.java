@@ -1,7 +1,6 @@
 package cloud.cave.service;
 
 import cloud.cave.common.Inspector;
-import cloud.cave.config.ObjectManager;
 
 /**
  * Created by krest on 21-09-2016.
@@ -14,7 +13,7 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     private Inspector inspector;
 
 
-    public WeatherCircuitBreaker(ObjectManager objectManager) {
+    public WeatherCircuitBreaker() {
         state = CircuitBreakerState.CLOSED;
         failureCount = 0;
     }
