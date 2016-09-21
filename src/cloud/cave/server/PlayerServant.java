@@ -151,6 +151,7 @@ public class PlayerServant implements Player {
                             requestWeather(getGroupName(), getID(), getRegion());
             weather = convertToFormattedString(weatherAsJson);
         } catch (CaveTimeOutException e) {
+
             weather = e.getMessage();
         }
         return weather;

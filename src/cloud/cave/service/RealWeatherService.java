@@ -26,8 +26,9 @@ import java.net.SocketTimeoutException;
 public class RealWeatherService implements WeatherService {
 
     private ServerConfiguration configuration;
-    private final int CONNECTION_TIMEOUT= 3000;
+    private final int CONNECTION_TIMEOUT = 3000;
     private final int SOCKET_TIMEOUT = 5000;
+    private ObjectManager objectManager;
 
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
@@ -48,9 +49,11 @@ public class RealWeatherService implements WeatherService {
             JSONParser parser = new JSONParser();
             JSONObject json = (JSONObject) parser.parse(result);
             return json;
-        } catch (ConnectTimeoutException cte ){
+        } catch (ConnectTimeoutException cte) {
+            objectManager.getInspector().write("Weather timeout", "Weather timeout: Connection");
             throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***", cte);
-        } catch (SocketTimeoutException ste){
+        } catch (SocketTimeoutException ste) {
+            objectManager.getInspector().write("Weather timeout", "Weather timeout: Slow response");
             throw new CaveTimeOutException("*** Weather service not available, sorry. Slow response. Try again later. ***", ste);
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,6 +82,7 @@ public class RealWeatherService implements WeatherService {
 
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
+        this.objectManager = objectManager;
         this.configuration = config;
     }
 
