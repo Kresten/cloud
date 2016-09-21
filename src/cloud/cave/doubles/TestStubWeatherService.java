@@ -40,7 +40,7 @@ public class TestStubWeatherService implements WeatherService {
       weather.put("feelslike", "-2.7");
       weather.put("time", "Thu, 05 Mar 2015 09:38:37 +0100");
     } else {
-      weather.put("authenticated", "false");
+      weather.put("authenticated", false);
       weather.put("errorMessage", "GroupName " + groupName + " or playerID "
               + playerID + " is not authenticated");
     }
