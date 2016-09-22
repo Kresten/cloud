@@ -80,4 +80,25 @@ public class TestWeather {
         player = loginResult.getPlayer();
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Connection timeout. Try again later. ***"));
     }
+
+    @Test
+    public void shouldTripCircuitBreaker() {
+        CaveServerFactory factory = new AllTestDoubleFactory() {
+            @Override
+            public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
+                WeatherService service = new RealWeatherServiceWithCircuitBreaker(new FakeWeatherService());
+                service.initialize(null, null); // no config object required
+                return service;
+            }
+        };
+        ObjectManager objMgr = new StandardObjectManager(factory);
+        cave = new CaveServant(objMgr);
+        loginName = "mikkel_aarskort";
+        Login loginResult = cave.login(loginName, "123");
+        player = loginResult.getPlayer();
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Closed state ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Closed state ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Closed state ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Open state ***"));
+    }
 }

@@ -41,7 +41,7 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     @Override
     public void incrementFailureCount() {
         failureCount++;
-        if (failureCount >= 3 && state.equals(CircuitBreakerState.CLOSED)) {
+        if (failureCount >= 3) {
             trip();
         }
     }
