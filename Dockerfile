@@ -4,11 +4,15 @@ FROM henrikbaerbak/cloudarch:e16.1
 #Create dir /root/cave and make workdir
 WORKDIR /root/cave
 
-#Copy all except what's in .dockerignore
-COPY . .
-
-#Prepare for future commands
-RUN ant build.all
+#Copy to image
+COPY lib-core lib-core
+COPY resource resource
+COPY src src
+COPY test test
+COPY entry-point.sh ./
+COPY build.xml ./
+COPY ivy.xml ./
+COPY *.cpf ./
 
 #Set entry-point
 ENTRYPOINT ["/bin/bash","entry-point.sh"]
