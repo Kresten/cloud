@@ -23,6 +23,11 @@ public class RealWeatherServiceWithTimeout extends RealWeatherService{
     private int socketTimeout;
     private ObjectManager objectManager;
 
+    public RealWeatherServiceWithTimeout() {
+        this.connectionTimeout = 3;
+        this.socketTimeout = 5;
+    }
+
     public RealWeatherServiceWithTimeout(int connectionTimeout, int socketTimeout) {
         this.connectionTimeout = connectionTimeout;
         this.socketTimeout = socketTimeout;

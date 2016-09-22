@@ -23,6 +23,13 @@ public class RealWeatherServiceWithCircuitBreaker extends RealWeatherService{
     private ObjectManager objectManager;
     private CircuitBreaker circuitBreaker;
 
+    public RealWeatherServiceWithCircuitBreaker() {
+        this.connectionTimeout = 3;
+        this.socketTimeout = 5;
+        circuitBreaker = new WeatherCircuitBreaker();
+        circuitBreaker.setInspector(objectManager.getInspector());
+    }
+
     public RealWeatherServiceWithCircuitBreaker(int connectionTimeout, int socketTimeout) {
         this.connectionTimeout = connectionTimeout;
         this.socketTimeout = socketTimeout;
