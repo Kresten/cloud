@@ -1,58 +1,52 @@
 package cloud.cave.service;
 
 import cloud.cave.broker.CaveTimeOutException;
-import cloud.cave.common.Inspector;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Region;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ConnectTimeoutException;
+import cloud.cave.server.common.ServerConfiguration;
+import org.apache.http.ConnectionClosedException;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
-import java.net.SocketTimeoutException;
 
 /**
  * Created by Kresten on 22-09-2016.
  */
-public class RealWeatherServiceWithTimeout extends RealWeatherService{
+public class RealWeatherServiceWithTimeout implements WeatherService {
 
-    private int connectionTimeout;
-    private int socketTimeout;
-    private ObjectManager objectManager;
+    private WeatherService decoratee;
 
-    public RealWeatherServiceWithTimeout() {
-        this.connectionTimeout = 3;
-        this.socketTimeout = 5;
+    public RealWeatherServiceWithTimeout(){
+        this.decoratee = new RealWeatherService(3, 5);
     }
 
-    public RealWeatherServiceWithTimeout(int connectionTimeout, int socketTimeout) {
-        this.connectionTimeout = connectionTimeout;
-        this.socketTimeout = socketTimeout;
+    public RealWeatherServiceWithTimeout(WeatherService decoratee) {
+        this.decoratee = decoratee;
     }
 
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
-        String urlAndPath = getUrlAndPath(groupName, playerID, region);
-        HttpClient client = getHttpClientWithTimeout(connectionTimeout, socketTimeout);
-        HttpGet request = new HttpGet(urlAndPath);
         try {
-            return executeRequest(client, request);
-        } catch (ConnectTimeoutException cte) {
-            objectManager.getInspector().write(Inspector.WEATHER_TIMEOUT_TOPIC, "Weather timeout: Connection");
-            throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***", cte);
-        } catch (SocketTimeoutException ste) {
-            objectManager.getInspector().write(Inspector.WEATHER_TIMEOUT_TOPIC, "Weather timeout: Slow response");
-            throw new CaveTimeOutException("*** Weather service not available, sorry. Slow response. Try again later. ***", ste);
-        } catch (ParseException e1) {
-            e1.printStackTrace();
-        } catch (ClientProtocolException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+            return decoratee.requestWeather(groupName,playerID, region);
         }
-        return null;
+        catch (CaveTimeOutException e){
+            JSONObject json = new JSONObject();
+            json.put("authenticated", false);
+            json.put("errorMessage", e.getMessage());
+            return json;
+        }
+    }
+
+    @Override
+    public void initialize(ObjectManager objectManager, ServerConfiguration config) {
+        decoratee.initialize(objectManager, config);
+    }
+
+    @Override
+    public void disconnect() {
+        decoratee.disconnect();
+    }
+
+    @Override
+    public ServerConfiguration getConfiguration() {
+        return decoratee.getConfiguration();
     }
 }

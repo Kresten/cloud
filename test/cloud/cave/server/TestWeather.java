@@ -11,6 +11,7 @@ import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.doubles.FakeWeatherService;
 import cloud.cave.doubles.NullInspector;
 import cloud.cave.service.RealWeatherServiceWithCircuitBreaker;
+import cloud.cave.service.RealWeatherServiceWithTimeout;
 import org.json.simple.JSONObject;
 import org.junit.*;
 
@@ -67,7 +68,7 @@ public class TestWeather {
         CaveServerFactory factory = new AllTestDoubleFactory() {
             @Override
             public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
-                WeatherService service = new FakeWeatherService();
+                WeatherService service = new RealWeatherServiceWithTimeout(new FakeWeatherService());
                 service.initialize(null, null); // no config object required
                 return service;
             }
