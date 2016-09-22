@@ -49,9 +49,9 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     @Override
     public void trip() {
         if (state.equals(CircuitBreakerState.CLOSED)) {
-            inspector.write("weather-circuit-breaker", "Closed -> Open");
+            inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "Closed -> Open");
         } else if (state.equals(CircuitBreakerState.HALF_OPEN)) {
-            inspector.write("weather-circuit-breaker", "HalfOpen -> Open");
+            inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "HalfOpen -> Open");
         }
         open();
         startTimeout();
@@ -60,7 +60,7 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     @Override
     public void reset() {
         failureCount = 0;
-        inspector.write("weather-circuit-breaker", "Open -> Closed");
+        inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "Open -> Closed");
         close();
     }
 
@@ -74,7 +74,7 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     public boolean hasTimeOutPassed(long theirTime) {
         boolean hasTimeOutPassed = theirTime - timeout > TWENTY_SECONDS;
         if (hasTimeOutPassed) {
-            inspector.write("weather-circuit-breaker", "Open -> HalfOpen");
+            inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "Open -> HalfOpen");
             halfOpen();
         }
         return hasTimeOutPassed;

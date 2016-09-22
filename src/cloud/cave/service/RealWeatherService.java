@@ -1,15 +1,14 @@
 package cloud.cave.service;
 
-import cloud.cave.broker.CaveTimeOutException;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.server.common.ServerData;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
@@ -17,7 +16,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 
 
 /**
@@ -26,44 +24,56 @@ import java.net.SocketTimeoutException;
 public class RealWeatherService implements WeatherService {
 
     private ServerConfiguration configuration;
-    private final int CONNECTION_TIMEOUT = 3000;
-    private final int SOCKET_TIMEOUT = 5000;
     private ObjectManager objectManager;
 
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
-        ServerData serverData = configuration.get(0);
-        String url = "http://" + serverData.getHostName() + ":" + serverData.getPortNumber();
-        String path = "/weather/api/v2/" + groupName + "/" + playerID + "/" + getCorrectRegion(region);
-
-        RequestConfig config = RequestConfig.custom().setConnectTimeout(CONNECTION_TIMEOUT).setSocketTimeout(SOCKET_TIMEOUT).build();
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        builder.setDefaultRequestConfig(config);
-        HttpClient client = builder.build();
-
-        HttpGet request = new HttpGet(url + path);
-        HttpResponse response;
+        String urlAndPath = getUrlAndPath(groupName, playerID, region);
+        HttpClient client = getHttpClient();
+        HttpGet request = new HttpGet(urlAndPath);
         try {
-            response = client.execute(request);
-            String result = EntityUtils.toString(response.getEntity());
-            JSONParser parser = new JSONParser();
-            JSONObject json = (JSONObject) parser.parse(result);
-            return json;
-        } catch (ConnectTimeoutException cte) {
-            objectManager.getInspector().write("Weather timeout", "Weather timeout: Connection");
-            throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***", cte);
-        } catch (SocketTimeoutException ste) {
-            objectManager.getInspector().write("Weather timeout", "Weather timeout: Slow response");
-            throw new CaveTimeOutException("*** Weather service not available, sorry. Slow response. Try again later. ***", ste);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
+            return executeRequest(client, request);
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        } catch (ClientProtocolException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
         return null;
     }
 
-    private String getCorrectRegion(Region region) {
+    protected JSONObject executeRequest(HttpClient client, HttpGet request) throws IOException, ParseException {
+        HttpResponse response;
+        response = client.execute(request);
+        String result = EntityUtils.toString(response.getEntity());
+        JSONParser parser = new JSONParser();
+        JSONObject json = (JSONObject) parser.parse(result);
+        return json;
+    }
+
+    protected HttpClient getHttpClient() {
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        return builder.build();
+    }
+
+    protected HttpClient getHttpClientWithTimeout(int connectionTimeout, int socketTimeout) {
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        if(connectionTimeout == 0 && socketTimeout == 0){
+            RequestConfig config = RequestConfig.custom().setConnectTimeout(connectionTimeout).setSocketTimeout(socketTimeout).build();
+            builder.setDefaultRequestConfig(config);
+        }
+        return builder.build();
+    }
+
+    protected String getUrlAndPath(String groupName, String playerID, Region region) {
+        ServerData serverData = getConfiguration().get(0);
+        String url = "http://" + serverData.getHostName() + ":" + serverData.getPortNumber();
+        String path = "/weather/api/v2/" + groupName + "/" + playerID + "/" + getCorrectRegion(region);
+        return url+path;
+    }
+
+    protected String getCorrectRegion(Region region) {
         switch (region) {
             case AARHUS:
                 return "Arhus";
@@ -77,7 +87,6 @@ public class RealWeatherService implements WeatherService {
                 return "Incorrect region";
         }
     }
-
 
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
