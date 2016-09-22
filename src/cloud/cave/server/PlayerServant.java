@@ -162,6 +162,7 @@ public class PlayerServant implements Player {
             }
         } catch (CaveTimeOutException e) {
             weatherCircuitBreaker.incrementFailureCount();
+//            weather = "*** Weather service not available, sorry. (Closed Circuit) ***";
             weather = e.getMessage();
         }
         return weather;
