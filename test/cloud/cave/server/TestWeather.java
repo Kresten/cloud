@@ -3,13 +3,11 @@ package cloud.cave.server;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
-import cloud.cave.common.Inspector;
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.config.StandardObjectManager;
-import cloud.cave.doubles.AllTestDoubleFactory;
-import cloud.cave.doubles.FakeWeatherService;
-import cloud.cave.doubles.NullInspector;
+import cloud.cave.doubles.*;
+import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.RealWeatherServiceWithCircuitBreaker;
 import cloud.cave.service.RealWeatherServiceWithTimeout;
 import org.json.simple.JSONObject;
@@ -17,7 +15,6 @@ import org.junit.*;
 
 import cloud.cave.common.CommonCaveTests;
 import cloud.cave.domain.*;
-import cloud.cave.doubles.TestStubWeatherService;
 import cloud.cave.service.WeatherService;
 
 /**
@@ -68,7 +65,7 @@ public class TestWeather {
         CaveServerFactory factory = new AllTestDoubleFactory() {
             @Override
             public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
-                WeatherService service = new RealWeatherServiceWithTimeout(new FakeWeatherService());
+                WeatherService service = new RealWeatherServiceWithTimeout(new SaboteurWeatherService());
                 service.initialize(null, null); // no config object required
                 return service;
             }
@@ -83,22 +80,23 @@ public class TestWeather {
 
     @Test
     public void shouldTripCircuitBreaker() {
+        WeatherService fakeWeatherService = new SaboteurWeatherService();
         CaveServerFactory factory = new AllTestDoubleFactory() {
             @Override
             public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
-                WeatherService service = new RealWeatherServiceWithCircuitBreaker(new FakeWeatherService());
-                service.initialize(null, null); // no config object required
+                WeatherService service = new RealWeatherServiceWithCircuitBreaker(fakeWeatherService);
                 return service;
             }
         };
         ObjectManager objMgr = new StandardObjectManager(factory);
+        objMgr.getWeatherService().initialize(objMgr,null);
         cave = new CaveServant(objMgr);
         loginName = "mikkel_aarskort";
         Login loginResult = cave.login(loginName, "123");
         player = loginResult.getPlayer();
-        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Closed state ***"));
-        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Closed state ***"));
-        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Closed state ***"));
-        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. Open state ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
+        assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Open Circuit) ***"));
     }
 }

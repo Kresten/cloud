@@ -11,15 +11,19 @@ import org.json.simple.JSONObject;
 /**
  * Created by krest on 21-09-2016.
  */
-public class FakeWeatherService implements WeatherService {
+public class SaboteurWeatherService implements WeatherService {
+    private ServerConfiguration configuration;
+    private ObjectManager objectManager;
+
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
-        throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***",null);
+        throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***", null);
     }
 
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
-
+        this.configuration = config;
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -29,6 +33,6 @@ public class FakeWeatherService implements WeatherService {
 
     @Override
     public ServerConfiguration getConfiguration() {
-        return null;
+        return configuration;
     }
 }

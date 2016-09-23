@@ -18,13 +18,11 @@ public class RealWeatherServiceWithCircuitBreaker implements WeatherService{
     public RealWeatherServiceWithCircuitBreaker(WeatherService decoratee) {
         this.decoratee = decoratee;
         circuitBreaker = new WeatherCircuitBreaker();
-        circuitBreaker.setInspector(objectManager.getInspector());
     }
 
     public RealWeatherServiceWithCircuitBreaker() {
         this.decoratee = new RealWeatherService(3, 5);
         circuitBreaker = new WeatherCircuitBreaker();
-        circuitBreaker.setInspector(objectManager.getInspector());
     }
 
     @Override
@@ -52,7 +50,7 @@ public class RealWeatherServiceWithCircuitBreaker implements WeatherService{
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
         decoratee.initialize(objectManager, config);
-        this.objectManager = objectManager;
+        circuitBreaker.setInspector(objectManager.getInspector());
     }
 
     @Override
