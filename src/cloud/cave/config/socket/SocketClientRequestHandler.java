@@ -49,7 +49,7 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new CaveIPCException("Disconnected from server",e);
     }
 
     // Send the JSON request as a string to the app server
