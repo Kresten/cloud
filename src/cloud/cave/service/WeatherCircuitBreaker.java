@@ -11,11 +11,19 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     private int failureCount;
     private long timeout;
     private Inspector inspector;
-
+    private static final int TWENTY_SECONDS = 1000 * 20;
+    private double timeToWait;
 
     public WeatherCircuitBreaker() {
         state = CircuitBreakerState.CLOSED;
         failureCount = 0;
+        timeToWait = TWENTY_SECONDS;
+    }
+
+    public WeatherCircuitBreaker(double timeToWait) {
+        state = CircuitBreakerState.CLOSED;
+        failureCount = 0;
+        this.timeToWait = timeToWait;
     }
 
     @Override
@@ -68,11 +76,9 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
         timeout = System.currentTimeMillis();
     }
 
-    private static final int TWENTY_SECONDS = 1000 * 20;
-
     @Override
     public boolean hasTimeOutPassed(long theirTime) {
-        boolean hasTimeOutPassed = theirTime - timeout > TWENTY_SECONDS;
+        boolean hasTimeOutPassed = theirTime - timeout > timeToWait;
         if (hasTimeOutPassed) {
             inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "Open -> HalfOpen");
             halfOpen();

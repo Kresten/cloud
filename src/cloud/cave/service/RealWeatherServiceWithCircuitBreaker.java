@@ -13,11 +13,15 @@ public class RealWeatherServiceWithCircuitBreaker implements WeatherService{
 
     private WeatherService decoratee;
     private CircuitBreaker circuitBreaker;
-    private ObjectManager objectManager;
 
     public RealWeatherServiceWithCircuitBreaker(WeatherService decoratee) {
         this.decoratee = decoratee;
         circuitBreaker = new WeatherCircuitBreaker();
+    }
+
+    public RealWeatherServiceWithCircuitBreaker(WeatherService decoratee, double timeToWait) {
+        this.decoratee = decoratee;
+        circuitBreaker = new WeatherCircuitBreaker(timeToWait);
     }
 
     public RealWeatherServiceWithCircuitBreaker() {
