@@ -16,7 +16,7 @@ public class SaboteurCRHDecorator implements ClientRequestHandler {
 
   private ClientRequestHandler decoratee;
   private String exceptionMsg;
-  
+
   public SaboteurCRHDecorator(ClientRequestHandler decoratee) {
     this.decoratee = decoratee;
     exceptionMsg = null;
