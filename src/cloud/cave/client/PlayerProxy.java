@@ -192,8 +192,8 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
   }
 
   @Override
-  public List<String> getMessageList() {
-    JSONObject requestJson = createRequestObject(MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY, "");
+  public List<String> getMessageList(int from) {
+    JSONObject requestJson = createRequestObject(MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY, Integer.toString(from));
     JSONObject replyJson = requestAndAwaitReply(requestJson);
 
     // The HEAD is not used, the list of player names are stored in the TAIL

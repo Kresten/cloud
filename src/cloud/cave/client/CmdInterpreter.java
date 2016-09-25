@@ -22,6 +22,8 @@ public class CmdInterpreter {
 
     private PrintStream systemOut;
     private InputStream systemIn;
+    private int messageFromCounter;
+    private int BOUNDED_MESSAGES_TO_RETURN = 10;
 
     /**
      * Construct the interpreter.
@@ -87,8 +89,9 @@ public class CmdInterpreter {
                         if (tokens[0].length() == 1) {
                             char primaryCommand = line.charAt(0);
                             handleSingleCharCommand(primaryCommand);
-
-                        } else {
+                            messageFromCounter = 0;
+                            }
+                            else {
                             handleMultipleCharCommand(tokens[0], tokens);
                         }
                         systemOut.println();
@@ -116,6 +119,9 @@ public class CmdInterpreter {
      * @param tokens  arguments split into token array
      */
     private void handleMultipleCharCommand(String command, String[] tokens) {
+        if (!command.equals("read")){
+            messageFromCounter = 0;
+        }
         if (command.equals("dig") && tokens.length > 2) {
             Direction direction = getDirectionFromChar(tokens[1].charAt(0));
             // Compile the room description by putting the tokens back into a single string again
@@ -158,9 +164,10 @@ public class CmdInterpreter {
 
 
         } else if (command.equals("read")) {
-            for (String message : player.getMessageList()) {
+            for (String message : player.getMessageList(messageFromCounter)) {
                 systemOut.println(message);
             }
+            messageFromCounter += BOUNDED_MESSAGES_TO_RETURN;
 
         } else if (command.equals("sys")) {
             systemOut.println("System information:");

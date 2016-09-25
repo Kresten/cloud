@@ -1,0 +1,13 @@
+The algorithm handling the bounded lookup could be on the client side. But that means that the entire dataset should be sent to the client to iterate over, and thus does not solve the problem at all.
+It could be handled by the server side player implementation alone, but then it would receive the entire data set to work on as well.
+It could be handled by the storage implementation alone, but that changes it to be a specific implementation of the storage and not a safety/stability addition to the program.
+I would say it should be handled by the server side player implementation and storage implementation together. The server side requests a number of messages. The number requested could be handled by the client or server
+
+Serverside count up method, hvor read sender plus 10 med hver gang.
+
+
+
+
+Test, skriv 30 beskeder , læs 10, 20, 30
+
+skriv 30, læs 10, lav noget, læs 10, 20, 30

@@ -42,9 +42,6 @@ public class TestAppserverDisconnect {
 
     @Test
     public void shouldDisconnectCorrectly() {
-        // The command sequence is
-        // look, who, weather, sys, exec, n, s, e, w, d, u, back, u, p, h, z, dig, u, dig,
-        // post, read, exec, exit
         String cmdList = "n\nn\nn\nq";
 
         CmdInterpreter cmd = new CmdInterpreter(cave, "magnus_aarskort", "312",

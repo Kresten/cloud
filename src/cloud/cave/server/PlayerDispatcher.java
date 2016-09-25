@@ -1,6 +1,7 @@
 package cloud.cave.server;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.json.simple.*;
 
@@ -120,7 +121,7 @@ public class PlayerDispatcher implements Dispatcher {
       }
       // === GET MESSAGE LIST
       else if (methodKey.equals(MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY)) {
-        List<String> messageList = player.getMessageList();
+        List<String> messageList = player.getMessageList(Integer.valueOf(parameter1));
         String[] asArray = new String[messageList.size()];
         messageList.toArray(asArray);
 

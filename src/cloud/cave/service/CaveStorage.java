@@ -52,10 +52,12 @@ public interface CaveStorage extends ExternalService {
    *
    * @param positionString
    *          the (x,y,z) of the position encoded as a position string.
+   * @param from index to grab chunk of messages from, so response is bounded
+   * @param amount the amount of mwssages, the method should return
    * @return  the list of messages on the wall
    */
-  List<String> getMessageList(String positionString);
 
+  List<String> getMessageList(String positionString, int from, int amount);
 
   /**
    * Compute the set of valid exits leading out from a given position

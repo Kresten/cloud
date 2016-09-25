@@ -108,7 +108,7 @@ class SpyCaveStorage implements CaveStorage {
   }
 
   @Override
-  public List<String> getMessageList(String positionString) {
+  public List<String> getMessageList(String positionString, int from, int amount) {
     return null;
   }
 

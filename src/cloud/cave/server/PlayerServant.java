@@ -29,6 +29,7 @@ public class PlayerServant implements Player {
 
     private String ID;
     private String sessionId;
+    private int BOUNDED_MESSAGES_TO_RETURN = 10;
 
     // These attributes of the player are essentially
     // caching of the 'true' information which is stored in
@@ -37,6 +38,7 @@ public class PlayerServant implements Player {
     private String groupName;
     private Region region;
     private RoomRecord currentRoom;
+
     private String position;
 
     private ObjectManager objectManager;
@@ -133,10 +135,12 @@ public class PlayerServant implements Player {
     public void addMessage(String message) {
         storage.addMessage(getPosition(), "[" + getName() + "] " + message);
     }
-
     @Override
-    public List<String> getMessageList() {
-        List<String> messageList = storage.getMessageList(getPosition());
+    public List<String> getMessageList(int from) {
+        List<String> messageList = storage.getMessageList(getPosition(), from, BOUNDED_MESSAGES_TO_RETURN);
+        if (messageList.isEmpty()){
+            messageList.add("*** There are no more messages on this wall ***");
+        }
         return messageList;
     }
 
