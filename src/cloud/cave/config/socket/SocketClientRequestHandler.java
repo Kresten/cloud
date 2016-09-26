@@ -22,7 +22,8 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
   private String hostName;
   private PrintWriter out;
   private BufferedReader in;
-  
+  private boolean disconnected;
+
   public SocketClientRequestHandler() {
     hostName = null;
     portNumber = -1; 
@@ -34,13 +35,15 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
     portNumber = config.get(0).getPortNumber();
   }
 
-  // TODO: Exercise: All exceptions are silently ignored which is incorrect. Improve it.
   @Override
   public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
       throws CaveIPCException {
 
     Socket clientSocket = null;
     // Create the socket to the host
+    if (disconnected){
+      throw new CaveIPCException("Disconnected from server", null);
+    }
     try {
       clientSocket = new Socket(hostName, portNumber);
       out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -49,6 +52,7 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (IOException e) {
+      disconnected = true;
       throw new CaveIPCException("Disconnected from server",e);
     }
 
