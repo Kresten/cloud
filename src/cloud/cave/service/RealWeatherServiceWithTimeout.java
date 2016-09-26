@@ -4,7 +4,6 @@ import cloud.cave.broker.CaveTimeOutException;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.ServerConfiguration;
-import org.apache.http.ConnectionClosedException;
 import org.json.simple.JSONObject;
 
 /**

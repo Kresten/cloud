@@ -1,7 +1,9 @@
 package cloud.cave.service;
 
+import cloud.cave.broker.CaveIPCException;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Region;
+import cloud.cave.doubles.TestStubSubscriptionService;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.server.common.ServerData;
 import cloud.cave.server.common.SubscriptionRecord;
@@ -16,6 +18,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Kresten on 15-09-2016.
@@ -46,7 +50,7 @@ public class RealSubscriptionService implements SubscriptionService {
                         Region.valueOf((String) subscription.get("region")));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new CaveIPCException("*** Subscription server down, please try again later ***", e);
         } catch (ParseException e) {
             e.printStackTrace();
         }
