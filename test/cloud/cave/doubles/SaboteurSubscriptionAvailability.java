@@ -13,13 +13,11 @@ import cloud.cave.service.SubscriptionService;
 public class SaboteurSubscriptionAvailability implements SubscriptionService {
 
     private ServerConfiguration configuration;
-    private int count;
+    private State state = State.UNAVAILABLE;
 
     @Override
     public SubscriptionRecord lookup(String loginName, String password) {
-        count++;
-        System.out.println("COUNT = " + count);
-        if (count == 2) {
+        if (state.equals(State.AVAILABLE)) {
             return new SubscriptionRecord("user-001", "Mikkel", "grp01", Region.AARHUS);
         } else {
             throw new CaveIPCException("*** Subscription server down, please try again later ***", null);
@@ -38,6 +36,15 @@ public class SaboteurSubscriptionAvailability implements SubscriptionService {
 
     @Override
     public void disconnect() {
-
     }
+
+    public void setState(State state){
+        this.state = state;
+    }
+
+    public enum State {
+        AVAILABLE, UNAVAILABLE
+    }
+
 }
+

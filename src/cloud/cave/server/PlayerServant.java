@@ -135,12 +135,10 @@ public class PlayerServant implements Player {
     public void addMessage(String message) {
         storage.addMessage(getPosition(), "[" + getName() + "] " + message);
     }
+
     @Override
     public List<String> getMessageList(int from) {
         List<String> messageList = storage.getMessageList(getPosition(), from, BOUNDED_MESSAGES_TO_RETURN);
-        if (messageList.isEmpty()){
-            messageList.add("*** There are no more messages on this wall ***");
-        }
         return messageList;
     }
 

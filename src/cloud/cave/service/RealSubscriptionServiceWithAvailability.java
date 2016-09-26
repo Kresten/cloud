@@ -39,7 +39,6 @@ public class RealSubscriptionServiceWithAvailability implements SubscriptionServ
             return record;
         } catch (CaveIPCException e) {
             if (subscriptionMap.containsKey(loginName)) {
-                System.out.println("*** Subscription server is currently down, but known player logged in through local database ***");
                 return subscriptionMap.get(loginName);
             }
             throw e;
