@@ -46,7 +46,7 @@ public interface CircuitBreaker {
      */
     void reset();
 
-    boolean hasTimeOutPassed(long theirTime);
+    boolean hasTimeOutPassed();
 
     void setInspector(Inspector inspector);
 }

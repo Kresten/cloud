@@ -7,6 +7,8 @@ import cloud.cave.config.CaveServerFactory;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.config.StandardObjectManager;
 import cloud.cave.doubles.*;
+import cloud.cave.server.common.FakeTimeStrategy;
+import cloud.cave.server.common.TimeStrategy;
 import cloud.cave.service.RealWeatherServiceWithCircuitBreaker;
 import cloud.cave.service.RealWeatherServiceWithTimeout;
 import org.json.simple.JSONObject;
@@ -106,10 +108,11 @@ public class TestWeather {
     public void shouldTripCircuitBreakerAndCloseAndOpen() {
         TestStubWeatherService testStubWeatherService = new TestStubWeatherService();
         testStubWeatherService.setState(TestStubWeatherServiceState.EXCEPTION);
+        FakeTimeStrategy fakeTimeStrategy = new FakeTimeStrategy();
         CaveServerFactory factory = new AllTestDoubleFactory() {
             @Override
             public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
-                WeatherService service = new RealWeatherServiceWithCircuitBreaker(testStubWeatherService, 1);
+                WeatherService service = new RealWeatherServiceWithCircuitBreaker(testStubWeatherService, fakeTimeStrategy, 0.5);
                 return service;
             }
         };
@@ -123,11 +126,7 @@ public class TestWeather {
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Open Circuit) ***"));
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        fakeTimeStrategy.incrementTime();
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Open Circuit) ***"));
     }
@@ -135,10 +134,11 @@ public class TestWeather {
     @Test
     public void shouldWorkOnCorrectInputButTripCircuitBreakerOnExceptions() {
         TestStubWeatherService testStubWeatherService = new TestStubWeatherService();
+        FakeTimeStrategy fakeTimeStrategy = new FakeTimeStrategy();
         CaveServerFactory factory = new AllTestDoubleFactory() {
             @Override
             public WeatherService createWeatherServiceConnector(ObjectManager objMgr) {
-                WeatherService service = new RealWeatherServiceWithCircuitBreaker(testStubWeatherService, 1);
+                WeatherService service = new RealWeatherServiceWithCircuitBreaker(testStubWeatherService, fakeTimeStrategy, 0.5);
                 return service;
             }
         };
@@ -161,11 +161,7 @@ public class TestWeather {
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Closed Circuit) ***"));
         assertThat(player.getWeather(), containsString("*** Weather service not available, sorry. (Open Circuit) ***"));
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        fakeTimeStrategy.incrementTime();
         testStubWeatherService.setState(TestStubWeatherServiceState.JSON);
         assertThat(player.getWeather(), containsString("The weather in AARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
         assertThat(player.getWeather(), containsString("This report is dated: Thu, 05 Mar 2015 09:38:37 +0100"));

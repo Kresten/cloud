@@ -1,6 +1,8 @@
 package cloud.cave.service;
 
 import cloud.cave.common.Inspector;
+import cloud.cave.server.common.RealTimeStrategy;
+import cloud.cave.server.common.TimeStrategy;
 
 /**
  * Created by krest on 21-09-2016.
@@ -13,16 +15,20 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     private Inspector inspector;
     private static final int TWENTY_SECONDS = 1000 * 20;
     private double timeToWait;
+    private TimeStrategy timeStrategy;
 
     public WeatherCircuitBreaker() {
         state = CircuitBreakerState.CLOSED;
         failureCount = 0;
+        timeStrategy = new RealTimeStrategy();
         timeToWait = TWENTY_SECONDS;
     }
 
-    public WeatherCircuitBreaker(double timeToWait) {
+    public WeatherCircuitBreaker(TimeStrategy timeStrategy, double timeToWait) {
         state = CircuitBreakerState.CLOSED;
         failureCount = 0;
+        this.timeStrategy = timeStrategy;
+        this.timeStrategy = timeStrategy;
         this.timeToWait = timeToWait;
     }
 
@@ -73,11 +79,12 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     }
 
     private void startTimeout() {
-        timeout = System.currentTimeMillis();
+        timeout = timeStrategy.getTime();
     }
 
     @Override
-    public boolean hasTimeOutPassed(long theirTime) {
+    public boolean hasTimeOutPassed() {
+        long theirTime = timeStrategy.getTime();
         boolean hasTimeOutPassed = theirTime - timeout > timeToWait;
         if (hasTimeOutPassed) {
             inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "Open -> HalfOpen");

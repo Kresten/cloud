@@ -4,6 +4,7 @@ import cloud.cave.broker.CaveTimeOutException;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.ServerConfiguration;
+import cloud.cave.server.common.TimeStrategy;
 import org.json.simple.JSONObject;
 
 /**
@@ -19,9 +20,9 @@ public class RealWeatherServiceWithCircuitBreaker implements WeatherService{
         circuitBreaker = new WeatherCircuitBreaker();
     }
 
-    public RealWeatherServiceWithCircuitBreaker(WeatherService decoratee, double timeToWait) {
+    public RealWeatherServiceWithCircuitBreaker(WeatherService decoratee, TimeStrategy timeStrategy, double timeToWait) {
         this.decoratee = decoratee;
-        circuitBreaker = new WeatherCircuitBreaker(timeToWait);
+        circuitBreaker = new WeatherCircuitBreaker(timeStrategy, timeToWait);
     }
 
     public RealWeatherServiceWithCircuitBreaker() {
@@ -32,7 +33,7 @@ public class RealWeatherServiceWithCircuitBreaker implements WeatherService{
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
         try {
-            if (circuitBreaker.getState().equals(CircuitBreakerState.OPEN) && !circuitBreaker.hasTimeOutPassed(System.currentTimeMillis())) {
+            if (circuitBreaker.getState().equals(CircuitBreakerState.OPEN) && !circuitBreaker.hasTimeOutPassed()) {
                 throw new CaveTimeOutException("*** Weather service not available, sorry. (Open Circuit) ***", null);
             }
             JSONObject json = decoratee.requestWeather(groupName, playerID, region);
