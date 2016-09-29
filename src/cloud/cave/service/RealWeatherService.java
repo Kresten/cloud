@@ -19,8 +19,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.io.IOException;
 
 
 /**
@@ -46,9 +46,14 @@ public class RealWeatherService implements WeatherService {
 
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
-        String urlAndPath = getUrlAndPath(groupName, playerID, region);
-        HttpClient client = getHttpClientWithTimeout(connectionTimeout, socketTimeout);
-        HttpGet request = new HttpGet(urlAndPath);
+        ServerData serverData = getConfiguration().get(0);
+        String url = "http://" + serverData.getHostName() + ":" + serverData.getPortNumber();
+        String path = "/weather/api/v2/" + groupName + "/" + playerID + "/" + getCorrectRegion(region);
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        RequestConfig config = RequestConfig.custom().setConnectTimeout(connectionTimeout).setSocketTimeout(socketTimeout).build();
+        builder.setDefaultRequestConfig(config);
+        HttpClient client = builder.build();
+        HttpGet request = new HttpGet(url + path);
         try {
             HttpResponse response;
             response = client.execute(request);
@@ -67,29 +72,14 @@ public class RealWeatherService implements WeatherService {
         } catch (ClientProtocolException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
+            e1.getCause();
+            System.out.println("THIS EXCEPTION SHOULD BE CAUGHT EARLIER");
             e1.printStackTrace();
         }
         return null;
     }
 
-
-    protected HttpClient getHttpClientWithTimeout(int connectionTimeout, int socketTimeout) {
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        if (connectionTimeout == 0 && socketTimeout == 0) {
-            RequestConfig config = RequestConfig.custom().setConnectTimeout(connectionTimeout).setSocketTimeout(socketTimeout).build();
-            builder.setDefaultRequestConfig(config);
-        }
-        return builder.build();
-    }
-
-    protected String getUrlAndPath(String groupName, String playerID, Region region) {
-        ServerData serverData = getConfiguration().get(0);
-        String url = "http://" + serverData.getHostName() + ":" + serverData.getPortNumber();
-        String path = "/weather/api/v2/" + groupName + "/" + playerID + "/" + getCorrectRegion(region);
-        return url + path;
-    }
-
-    protected String getCorrectRegion(Region region) {
+    private String getCorrectRegion(Region region) {
         switch (region) {
             case AARHUS:
                 return "Arhus";
