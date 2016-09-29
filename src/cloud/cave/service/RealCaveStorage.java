@@ -35,13 +35,25 @@ public class RealCaveStorage implements CaveStorage {
         Document newRoom = new Document(POSITION_KEY, positionString);
         List<Document> docList = new ArrayList();
         rooms.find(newRoom).into(docList);
-        Document doc = docList.get(0);
-        return new RoomRecord((String) doc.get("description"));
+        if (!docList.isEmpty()){
+            Document doc = docList.get(0);
+            return new RoomRecord((String) doc.get("description"));
+        }
+        else {
+            return null;
+        }
     }
 
     @Override
     public boolean addRoom(String positionString, RoomRecord description) {
-        return false;
+        RoomRecord roomRecord = getRoom(positionString);
+        if (roomRecord!=null){
+            return false;
+        }
+        else {
+            //add room
+            return true;
+        }
     }
 
     @Override
