@@ -9,6 +9,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
+import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,17 +18,28 @@ import java.util.List;
  */
 public class RealCaveStorage implements CaveStorage {
 
+    //Room
     private MongoCollection<Document> rooms;
-    private MongoCollection<Document> wallMessages;
-    private MongoCollection<Document> players;
     private final String POSITION_KEY = "position";
     private final String DESCRIPTION_KEY = "description";
+    //Wall
+    private MongoCollection<Document> wallMessages;
     private final String MESSAGE_KEY = "message";
-    private final String PLAYER_KEY = "player";
+    //Player
+    private MongoCollection<Document> players;
+    private final String PLAYERID_KEY = "playerId";
+    private final String PLAYERNAME_KEY = "playerName";
+    private final String GROUPNAME_KEY = "groupName";
+    private final String REGION_KEY = "region";
+    private final String POSITIONSTRING_KEY = "positionString";
+    private final String SESSIONID_KEY = "sessionId";
+    private ServerConfiguration serverConfiguration;
+    private MongoClient mongoClient;
+
 
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
-        MongoClient mongoClient = new MongoClient();
+        mongoClient = new MongoClient();
         MongoDatabase db = mongoClient.getDatabase("CaveStorage");
         rooms = db.getCollection("rooms");
         wallMessages = db.getCollection("wallMessages");
@@ -65,10 +77,10 @@ public class RealCaveStorage implements CaveStorage {
 
     @Override
     public void addMessage(String positionString, String message) {
-        Document addMessage = new Document();
-        addMessage.put(POSITION_KEY, positionString);
-        addMessage.put(MESSAGE_KEY, message);
-        wallMessages.insertOne(addMessage);
+        Document addMessageDoc = new Document();
+        addMessageDoc.put(POSITION_KEY, positionString);
+        addMessageDoc.put(MESSAGE_KEY, message);
+        wallMessages.insertOne(addMessageDoc);
     }
 
     @Override
@@ -113,48 +125,91 @@ public class RealCaveStorage implements CaveStorage {
 
     @Override
     public PlayerRecord getPlayerByID(String playerID) {
-        Document playerDoc = new Document(PLAYER_KEY, playerID);
+        Document playerDoc = new Document(PLAYERID_KEY, playerID);
         List<Document> docList = new ArrayList();
         players.find(playerDoc).into(docList);
         PlayerRecord playerRecord = null;
         if (!docList.isEmpty()){
             Document player = docList.get(0);
             playerRecord = new PlayerRecord(new SubscriptionRecord(
-                    (String) player.get("playerId"),
-                    (String) player.get("playerName"),
-                    (String) player.get("groupName"),
-                    Region.valueOf((String) player.get("region"))),
-                    (String) player.get("positionString"),
-                    (String) player.get("sessionId"));
+                    (String) player.get(PLAYERID_KEY),
+                    (String) player.get(PLAYERNAME_KEY),
+                    (String) player.get(GROUPNAME_KEY),
+                    Region.valueOf((String) player.get(REGION_KEY))),
+                    (String) player.get(POSITIONSTRING_KEY),
+                    (String) player.get(SESSIONID_KEY));
         }
         return playerRecord;
     }
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
-        //        playerId2PlayerSpecs.put(record.getPlayerID(), record);
-        Document addMessage = new Document();
-        addMessage.put(PLAYER_KEY, record.getPlayerID());
-        wallMessages.insertOne(addMessage);
+        Document updatePlayerDoc = new Document();
+        updatePlayerDoc.put(PLAYERID_KEY, record.getPlayerID());
+        updatePlayerDoc.put(PLAYERNAME_KEY, record.getPlayerName());
+        updatePlayerDoc.put(GROUPNAME_KEY, record.getGroupName());
+        updatePlayerDoc.put(REGION_KEY, record.getRegion());
+        updatePlayerDoc.put(POSITIONSTRING_KEY, record.getPositionAsString());
+        updatePlayerDoc.put(SESSIONID_KEY, record.getSessionId());
+        players.insertOne(updatePlayerDoc);
     }
 
     @Override
     public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
-        return null;
+        List<PlayerRecord> theList = new ArrayList<PlayerRecord>();
+        Document playerDoc = new Document(POSITIONSTRING_KEY, positionString);
+        List<Document> docList = new ArrayList();
+        players.find(playerDoc).into(docList);
+        for (Document doc : docList) {
+            PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
+                    (String) doc.get(PLAYERID_KEY),
+                    (String) doc.get(PLAYERNAME_KEY),
+                    (String) doc.get(GROUPNAME_KEY),
+                    Region.valueOf((String) doc.get(REGION_KEY))),
+                    (String) doc.get(POSITIONSTRING_KEY),
+                    (String) doc.get(SESSIONID_KEY));
+            if (playerRecord.isInCave() && playerRecord.getPositionAsString().equals(positionString)) {
+                theList.add(playerRecord);
+            }
+        }
+        return theList;
     }
 
     @Override
     public int computeCountOfActivePlayers() {
-        return 0;
+        return getPlayerList().size();
     }
 
+    /**
+     * Compute the list of players in the cave.
+     *
+     * @return list of all players in the cave.
+     */
+    private List<PlayerRecord> getPlayerList() {
+        Document notEqualsNull = new Document("$ne", null);
+        Document sessionDoc = new Document(SESSIONID_KEY, notEqualsNull);
+        List<Document> docList = new ArrayList();
+        players.find(sessionDoc).into(docList);
+        List<PlayerRecord> theList = new ArrayList<PlayerRecord>();
+        for(Document doc : docList){
+            PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
+                    (String) doc.get(PLAYERID_KEY),
+                    (String) doc.get(PLAYERNAME_KEY),
+                    (String) doc.get(GROUPNAME_KEY),
+                    Region.valueOf((String) doc.get(REGION_KEY))),
+                    (String) doc.get(POSITIONSTRING_KEY),
+                    (String) doc.get(SESSIONID_KEY));
+            theList.add(playerRecord);
+        }
+        return theList;
+    }
     @Override
     public void disconnect() {
-
+        mongoClient.close();
     }
 
     @Override
     public ServerConfiguration getConfiguration() {
-        return null;
+        return serverConfiguration;
     }
 }
