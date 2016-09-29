@@ -84,7 +84,6 @@ public class CmdInterpreter {
                     // split into into tokens on whitespace
                     String[] tokens = line.split("\\s");
                     try {
-
                         // First handle the 'short hand' notation for movement
                         if (tokens[0].length() == 1) {
                             char primaryCommand = line.charAt(0);

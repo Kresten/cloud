@@ -12,6 +12,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
@@ -51,7 +52,7 @@ public class RealWeatherService implements WeatherService {
         HttpGet request = new HttpGet(urlAndPath);
         try {
             return executeRequest(client, request);
-        } catch (ConnectTimeoutException cte) {
+        } catch (ConnectTimeoutException | HttpHostConnectException cte) {
             objectManager.getInspector().write(Inspector.WEATHER_TIMEOUT_TOPIC, "Weather timeout: Connection");
             throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***", cte);
         } catch (SocketTimeoutException ste) {

@@ -1,0 +1,78 @@
+package cloud.cave.service;
+
+import cloud.cave.config.ObjectManager;
+import cloud.cave.domain.Direction;
+import cloud.cave.server.common.PlayerRecord;
+import cloud.cave.server.common.RoomRecord;
+import cloud.cave.server.common.ServerConfiguration;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
+
+import java.util.List;
+
+/**
+ * Created by Kresten on 29-09-2016.
+ */
+public class RealCaveStorage implements CaveStorage {
+
+    @Override
+    public void initialize(ObjectManager objectManager, ServerConfiguration config) {
+        MongoClient mongoClient = new MongoClient();
+        MongoDatabase db = mongoClient.getDatabase("test");
+    }
+
+    @Override
+    public RoomRecord getRoom(String positionString) {
+        return null;
+    }
+
+    @Override
+    public boolean addRoom(String positionString, RoomRecord description) {
+        return false;
+    }
+
+    @Override
+    public void addMessage(String positionString, String message) {
+
+    }
+
+    @Override
+    public List<String> getMessageList(String positionString, int from, int amount) {
+        return null;
+    }
+
+    @Override
+    public List<Direction> getSetOfExitsFromRoom(String positionString) {
+        return null;
+    }
+
+    @Override
+    public PlayerRecord getPlayerByID(String playerID) {
+        return null;
+    }
+
+    @Override
+    public void updatePlayerRecord(PlayerRecord record) {
+
+    }
+
+    @Override
+    public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
+        return null;
+    }
+
+    @Override
+    public int computeCountOfActivePlayers() {
+        return 0;
+    }
+
+    @Override
+    public void disconnect() {
+
+    }
+
+    @Override
+    public ServerConfiguration getConfiguration() {
+        return null;
+    }
+}

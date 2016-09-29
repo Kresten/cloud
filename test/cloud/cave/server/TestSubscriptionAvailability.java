@@ -8,13 +8,11 @@ import cloud.cave.domain.Login;
 import cloud.cave.domain.LoginResult;
 import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.doubles.SaboteurSubscriptionAvailability;
-import cloud.cave.doubles.TestStubSubscriptionService;
 import cloud.cave.service.RealSubscriptionServiceWithAvailability;
 import cloud.cave.service.SubscriptionService;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
