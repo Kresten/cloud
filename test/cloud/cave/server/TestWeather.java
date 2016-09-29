@@ -3,6 +3,7 @@ package cloud.cave.server;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import cloud.cave.common.Inspector;
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.config.StandardObjectManager;

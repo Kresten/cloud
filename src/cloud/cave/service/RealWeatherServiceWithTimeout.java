@@ -24,7 +24,8 @@ public class RealWeatherServiceWithTimeout implements WeatherService {
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
         try {
-            return decoratee.requestWeather(groupName,playerID, region);
+            JSONObject json = decoratee.requestWeather(groupName,playerID, region);
+            return json;
         }
         catch (CaveTimeOutException e){
             JSONObject json = new JSONObject();

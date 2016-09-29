@@ -24,7 +24,7 @@ public class FakeCaveStorage implements CaveStorage {
     // The positionString is the primary key and the value object
     // for a room the rest of the tuple
     Map<String, RoomRecord> roomMap;
-    Map<String, ArrayList> messageMap;
+    Map<String, List> messageMap;
 
     @Override
     public void initialize(ObjectManager objMgr, ServerConfiguration config) {
@@ -68,10 +68,8 @@ public class FakeCaveStorage implements CaveStorage {
 
     @Override
     public void addMessage(String positionString, String message) {
-        ArrayList messageList = messageMap.get(positionString);
-        if (messageList == null) {
-            messageList = new ArrayList();
-        }
+        List<String> messageList = messageMap.get(positionString);
+        messageList = messageList == null ? new ArrayList() : messageList;
         messageList.add(message);
         messageMap.put(positionString, messageList);
     }
@@ -79,10 +77,7 @@ public class FakeCaveStorage implements CaveStorage {
     @Override
     public List<String> getMessageList(String positionString, int from, int amount) {
         List<String> messageList = messageMap.get(positionString);
-        if (messageList == null) {
-            messageList = new ArrayList();
-        }
-
+        messageList = messageList == null ? new ArrayList() : messageList;
         int messageListSize = messageList.size();
         if (messageListSize < from + amount) {
             amount = messageListSize - from;

@@ -44,14 +44,18 @@ public class RealWeatherService implements WeatherService {
         this.socketTimeout = socketTimeout;
     }
 
-
     @Override
     public JSONObject requestWeather(String groupName, String playerID, Region region) {
         String urlAndPath = getUrlAndPath(groupName, playerID, region);
         HttpClient client = getHttpClientWithTimeout(connectionTimeout, socketTimeout);
         HttpGet request = new HttpGet(urlAndPath);
         try {
-            return executeRequest(client, request);
+            HttpResponse response;
+            response = client.execute(request);
+            String result = EntityUtils.toString(response.getEntity());
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(result);
+            return json;
         } catch (ConnectTimeoutException | HttpHostConnectException cte) {
             objectManager.getInspector().write(Inspector.WEATHER_TIMEOUT_TOPIC, "Weather timeout: Connection");
             throw new CaveTimeOutException("*** Weather service not available, sorry. Connection timeout. Try again later. ***", cte);
@@ -66,15 +70,6 @@ public class RealWeatherService implements WeatherService {
             e1.printStackTrace();
         }
         return null;
-    }
-
-    protected JSONObject executeRequest(HttpClient client, HttpGet request) throws IOException, ParseException {
-        HttpResponse response;
-        response = client.execute(request);
-        String result = EntityUtils.toString(response.getEntity());
-        JSONParser parser = new JSONParser();
-        JSONObject json = (JSONObject) parser.parse(result);
-        return json;
     }
 
 
