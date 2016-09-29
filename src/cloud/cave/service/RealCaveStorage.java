@@ -6,8 +6,11 @@ import cloud.cave.server.common.PlayerRecord;
 import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,15 +18,25 @@ import java.util.List;
  */
 public class RealCaveStorage implements CaveStorage {
 
+    private MongoCollection<Document> rooms;
+    private MongoCollection<Document> wallMessages;
+    private String POSITION_KEY = "position";
+
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
         MongoClient mongoClient = new MongoClient();
-        MongoDatabase db = mongoClient.getDatabase("test");
+        MongoDatabase db = mongoClient.getDatabase("CaveStorage");
+        rooms = db.getCollection("rooms");
+        wallMessages = db.getCollection("wallMessages");
     }
 
     @Override
     public RoomRecord getRoom(String positionString) {
-        return null;
+        Document newRoom = new Document(POSITION_KEY, positionString);
+        List<Document> docList = new ArrayList();
+        rooms.find(newRoom).into(docList);
+        Document doc = docList.get(0);
+        return new RoomRecord((String) doc.get("description"));
     }
 
     @Override
