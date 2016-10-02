@@ -74,10 +74,7 @@ public class WeatherCircuitBreaker implements CircuitBreaker {
     @Override
     public void reset() {
         failureCount = 0;
-        if (state.equals(CircuitBreakerState.OPEN)){
-            inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "Open -> Closed");
-        }
-        else if (state.equals(CircuitBreakerState.HALF_OPEN)){
+        if (state.equals(CircuitBreakerState.HALF_OPEN)) {
             inspector.write(Inspector.WEATHER_CIRCUIT_BREAKER_TOPIC, "HalfOpen -> Closed");
         }
         close();
