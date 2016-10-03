@@ -4,11 +4,18 @@ import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Direction;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.*;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.BSON;
+import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,24 +50,25 @@ public class RealCaveStorage implements CaveStorage {
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
         this.serverConfiguration = config;
-        ServerData serverData = getConfiguration().get(0);
+        ServerData serverData = serverConfiguration.get(0);
         String hostName = serverData.getHostName();
         int portNumber = serverData.getPortNumber();
-        mongoClient = new MongoClient(hostName, portNumber);
+        //FIXME Vi kører docker i en virtuel maskine, så det er dens ip (VMs localhost) vi skal connecte til
+        mongoClient = new MongoClient("192.168.99.100", 32771);
         MongoDatabase db = mongoClient.getDatabase("CaveStorage");
         rooms = db.getCollection("rooms");
         wallMessages = db.getCollection("wallMessages");
         players = db.getCollection("players");
-        this.addRoom("0, 0, 0", new RoomRecord(
-                    "You are standing at the end of a road before a small brick building."));
-        this.addRoom("0, 1, 0", new RoomRecord(
-                    "You are in open forest, with a deep valley to one side."));
-        this.addRoom("1, 0, 0", new RoomRecord(
-                    "You are inside a building, a well house for a large spring."));
-        this.addRoom("-1, 0, 0", new RoomRecord(
-                    "You have walked up a hill, still in the forest."));
-        this.addRoom("0, 0, 1", new RoomRecord(
-                    "You are in the top of a tall tree, at the end of a road."));
+        this.addRoom(new Point3(0, 0, 0).getPositionString(), new RoomRecord(
+                "You are standing at the end of a road before a small brick building."));
+        this.addRoom(new Point3(0, 1, 0).getPositionString(), new RoomRecord(
+                "You are in open forest, with a deep valley to one side."));
+        this.addRoom(new Point3(1, 0, 0).getPositionString(), new RoomRecord(
+                "You are inside a building, a well house for a large spring."));
+        this.addRoom(new Point3(-1, 0, 0).getPositionString(), new RoomRecord(
+                "You have walked up a hill, still in the forest."));
+        this.addRoom(new Point3(0, 0, 1).getPositionString(), new RoomRecord(
+                "You are in the top of a tall tree, at the end of a road."));
     }
 
     @Override
@@ -99,7 +107,7 @@ public class RealCaveStorage implements CaveStorage {
     public List<String> getMessageList(String positionString, int from, int amount) {
         Document messageDoc = new Document(POSITION_KEY, positionString);
         List<Document> docList = new ArrayList();
-        rooms.find(messageDoc).into(docList);
+        wallMessages.find(messageDoc).into(docList);
         List<String> messageList = new ArrayList();
         for (Document doc : docList) {
             messageList.add((String) doc.get(MESSAGE_KEY));
@@ -125,10 +133,8 @@ public class RealCaveStorage implements CaveStorage {
             p = new Point3(pZero.x(), pZero.y(), pZero.z());
             p.translate(d);
             String position = p.getPositionString();
-            Document roomDoc = new Document(POSITION_KEY, position);
-            List<Document> docList = new ArrayList();
-            rooms.find(roomDoc).into(docList);
-            if (!docList.isEmpty()) {
+            Document roomDoc = rooms.find(eq(POSITION_KEY, position)).first();
+            if (roomDoc != null) {
                 listOfExits.add(d);
             }
         }
@@ -137,33 +143,31 @@ public class RealCaveStorage implements CaveStorage {
 
     @Override
     public PlayerRecord getPlayerByID(String playerID) {
-        Document playerDoc = new Document(PLAYERID_KEY, playerID);
-        List<Document> docList = new ArrayList();
-        players.find(playerDoc).into(docList);
-        PlayerRecord playerRecord = null;
-        if (!docList.isEmpty()) {
-            Document player = docList.get(0);
-            playerRecord = new PlayerRecord(new SubscriptionRecord(
-                    (String) player.get(PLAYERID_KEY),
-                    (String) player.get(PLAYERNAME_KEY),
-                    (String) player.get(GROUPNAME_KEY),
-                    Region.valueOf((String) player.get(REGION_KEY))),
-                    (String) player.get(POSITIONSTRING_KEY),
-                    (String) player.get(SESSIONID_KEY));
+        Document playerDoc = players.find(eq(PLAYERID_KEY, playerID)).first();
+        if (playerDoc != null) {
+            PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
+                    playerID,
+                    playerDoc.get(PLAYERNAME_KEY).toString(),
+                    playerDoc.get(GROUPNAME_KEY).toString(),
+                    Region.valueOf(playerDoc.get(REGION_KEY).toString())),
+                    playerDoc.get(POSITIONSTRING_KEY).toString(),
+                    playerDoc.get(SESSIONID_KEY).toString());
+            return playerRecord;
         }
-        return playerRecord;
+        return null;
     }
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
+        Document filter = players.find(eq(PLAYERID_KEY, record.getPlayerID())).first();
         Document updatePlayerDoc = new Document();
         updatePlayerDoc.put(PLAYERID_KEY, record.getPlayerID());
         updatePlayerDoc.put(PLAYERNAME_KEY, record.getPlayerName());
         updatePlayerDoc.put(GROUPNAME_KEY, record.getGroupName());
-        updatePlayerDoc.put(REGION_KEY, record.getRegion());
+        updatePlayerDoc.put(REGION_KEY, record.getRegion().toString());
         updatePlayerDoc.put(POSITIONSTRING_KEY, record.getPositionAsString());
         updatePlayerDoc.put(SESSIONID_KEY, record.getSessionId());
-        players.insertOne(updatePlayerDoc);
+        players.replaceOne(filter, updatePlayerDoc);
     }
 
     @Override
