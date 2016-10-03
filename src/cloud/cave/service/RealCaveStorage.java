@@ -9,7 +9,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
-import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,11 +38,29 @@ public class RealCaveStorage implements CaveStorage {
 
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
+        this.serverConfiguration = config;
         mongoClient = new MongoClient();
         MongoDatabase db = mongoClient.getDatabase("CaveStorage");
         rooms = db.getCollection("rooms");
         wallMessages = db.getCollection("wallMessages");
         players = db.getCollection("players");
+
+        if (getRoom("0, 0, 0") == null) {
+            addRoom("0, 0, 0", new RoomRecord(
+                    "You are standing at the end of a road before a small brick building."));
+        } if (getRoom("0, 1, 0") == null) {
+            addRoom("0, 1, 0", new RoomRecord(
+                    "You are in open forest, with a deep valley to one side."));
+        } if (getRoom("1, 0, 0") == null) {
+            addRoom("1, 0, 0", new RoomRecord(
+                    "You are inside a building, a well house for a large spring."));
+        } if (getRoom("-1, 0, 0") == null) {
+            addRoom("-1, 0, 0", new RoomRecord(
+                    "You have walked up a hill, still in the forest."));
+        } if (getRoom("0, 0, 1") == null) {
+            addRoom("0, 0, 1", new RoomRecord(
+                    "You are in the top of a tall tree, at the end of a road."));
+        }
     }
 
     @Override
@@ -51,11 +68,10 @@ public class RealCaveStorage implements CaveStorage {
         Document roomDoc = new Document(POSITION_KEY, positionString);
         List<Document> docList = new ArrayList();
         rooms.find(roomDoc).into(docList);
-        if (!docList.isEmpty()){
+        if (!docList.isEmpty()) {
             Document doc = docList.get(0);
             return new RoomRecord((String) doc.get("description"));
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -63,13 +79,12 @@ public class RealCaveStorage implements CaveStorage {
     @Override
     public boolean addRoom(String positionString, RoomRecord description) {
         RoomRecord roomRecord = getRoom(positionString);
-        if (roomRecord!=null){
+        if (roomRecord != null) {
             return false;
-        }
-        else {
+        } else {
             Document roomDoc = new Document();
             roomDoc.put(POSITION_KEY, positionString);
-            roomDoc.put(DESCRIPTION_KEY, description);
+            roomDoc.put(DESCRIPTION_KEY, description.description);
             rooms.insertOne(roomDoc);
             return true;
         }
@@ -89,7 +104,7 @@ public class RealCaveStorage implements CaveStorage {
         List<Document> docList = new ArrayList();
         rooms.find(messageDoc).into(docList);
         List<String> messageList = new ArrayList();
-        for (Document doc : docList){
+        for (Document doc : docList) {
             messageList.add((String) doc.get(MESSAGE_KEY));
         }
         int messageListSize = messageList.size();
@@ -116,7 +131,7 @@ public class RealCaveStorage implements CaveStorage {
             Document roomDoc = new Document(POSITION_KEY, position);
             List<Document> docList = new ArrayList();
             rooms.find(roomDoc).into(docList);
-            if (!docList.isEmpty()){
+            if (!docList.isEmpty()) {
                 listOfExits.add(d);
             }
         }
@@ -129,7 +144,7 @@ public class RealCaveStorage implements CaveStorage {
         List<Document> docList = new ArrayList();
         players.find(playerDoc).into(docList);
         PlayerRecord playerRecord = null;
-        if (!docList.isEmpty()){
+        if (!docList.isEmpty()) {
             Document player = docList.get(0);
             playerRecord = new PlayerRecord(new SubscriptionRecord(
                     (String) player.get(PLAYERID_KEY),
@@ -191,7 +206,7 @@ public class RealCaveStorage implements CaveStorage {
         List<Document> docList = new ArrayList();
         players.find(sessionDoc).into(docList);
         List<PlayerRecord> theList = new ArrayList<PlayerRecord>();
-        for(Document doc : docList){
+        for (Document doc : docList) {
             PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
                     (String) doc.get(PLAYERID_KEY),
                     (String) doc.get(PLAYERNAME_KEY),
@@ -203,6 +218,7 @@ public class RealCaveStorage implements CaveStorage {
         }
         return theList;
     }
+
     @Override
     public void disconnect() {
         mongoClient.close();

@@ -14,13 +14,8 @@ import java.util.List;
 public class RoomRecord {
 
   public String description;
-  private List<String> messageList = new ArrayList<>();
-  
+
   public RoomRecord(String description) {
     this.description = description;
-  }
-
-  public List<String> getMessageList() {
-    return messageList;
   }
 }
