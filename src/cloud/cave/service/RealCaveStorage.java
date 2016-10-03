@@ -6,11 +6,14 @@ import cloud.cave.domain.Region;
 import cloud.cave.server.common.*;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.mongodb.client.model.Filters.*;
 
 /**
  * Created by Kresten on 29-09-2016.
@@ -32,6 +35,7 @@ public class RealCaveStorage implements CaveStorage {
     private final String REGION_KEY = "region";
     private final String POSITIONSTRING_KEY = "positionString";
     private final String SESSIONID_KEY = "sessionId";
+
     private ServerConfiguration serverConfiguration;
     private MongoClient mongoClient;
 
@@ -39,38 +43,31 @@ public class RealCaveStorage implements CaveStorage {
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
         this.serverConfiguration = config;
-        mongoClient = new MongoClient();
+        ServerData serverData = getConfiguration().get(0);
+        String hostName = serverData.getHostName();
+        int portNumber = serverData.getPortNumber();
+        mongoClient = new MongoClient(hostName, portNumber);
         MongoDatabase db = mongoClient.getDatabase("CaveStorage");
         rooms = db.getCollection("rooms");
         wallMessages = db.getCollection("wallMessages");
         players = db.getCollection("players");
-
-        if (getRoom("0, 0, 0") == null) {
-            addRoom("0, 0, 0", new RoomRecord(
+        this.addRoom("0, 0, 0", new RoomRecord(
                     "You are standing at the end of a road before a small brick building."));
-        } if (getRoom("0, 1, 0") == null) {
-            addRoom("0, 1, 0", new RoomRecord(
+        this.addRoom("0, 1, 0", new RoomRecord(
                     "You are in open forest, with a deep valley to one side."));
-        } if (getRoom("1, 0, 0") == null) {
-            addRoom("1, 0, 0", new RoomRecord(
+        this.addRoom("1, 0, 0", new RoomRecord(
                     "You are inside a building, a well house for a large spring."));
-        } if (getRoom("-1, 0, 0") == null) {
-            addRoom("-1, 0, 0", new RoomRecord(
+        this.addRoom("-1, 0, 0", new RoomRecord(
                     "You have walked up a hill, still in the forest."));
-        } if (getRoom("0, 0, 1") == null) {
-            addRoom("0, 0, 1", new RoomRecord(
+        this.addRoom("0, 0, 1", new RoomRecord(
                     "You are in the top of a tall tree, at the end of a road."));
-        }
     }
 
     @Override
     public RoomRecord getRoom(String positionString) {
-        Document roomDoc = new Document(POSITION_KEY, positionString);
-        List<Document> docList = new ArrayList();
-        rooms.find(roomDoc).into(docList);
-        if (!docList.isEmpty()) {
-            Document doc = docList.get(0);
-            return new RoomRecord((String) doc.get("description"));
+        Document roomDoc = rooms.find(eq(POSITION_KEY, positionString)).first();
+        if (roomDoc != null) {
+            return new RoomRecord((String) roomDoc.get("description"));
         } else {
             return null;
         }

@@ -2,4 +2,4 @@
 < weather-service.cpf
 
 # = Cave storage
-SKYCAVE_CAVESTORAGE_IMPLEMENTATION = cloud.cave.doubles.RealCaveStorage
+SKYCAVE_CAVESTORAGE_IMPLEMENTATION = cloud.cave.service.RealCaveStorage
