@@ -53,8 +53,8 @@ public class RealCaveStorage implements CaveStorage {
         ServerData serverData = serverConfiguration.get(0);
         String hostName = serverData.getHostName();
         int portNumber = serverData.getPortNumber();
-        //FIXME Vi kører docker i en virtuel maskine, så det er dens ip (VMs localhost) vi skal connecte til
-        mongoClient = new MongoClient("192.168.99.100", 32771);
+        //FIXME We run the db in a VM, so it is the VMs localhost that we should connect to (like "192.168.99.100", 32771)
+        mongoClient = new MongoClient(hostName, portNumber);
         MongoDatabase db = mongoClient.getDatabase("CaveStorage");
         rooms = db.getCollection("rooms");
         wallMessages = db.getCollection("wallMessages");
