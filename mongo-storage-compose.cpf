@@ -1,0 +1,5 @@
+< mongo-storage.cpf
+
+SKYCAVE_APPSERVER = localhost:37123
+
+SKYCAVE_DBSERVER = mongo:27017

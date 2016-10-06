@@ -13,6 +13,7 @@ COPY entry-point.sh ./
 COPY build.xml ./
 COPY ivy.xml ./
 COPY *.cpf ./
+COPY *.yml ./
 
 #Set entry-point
 ENTRYPOINT ["/bin/bash","entry-point.sh"]
