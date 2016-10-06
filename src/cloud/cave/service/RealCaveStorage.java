@@ -159,7 +159,7 @@ public class RealCaveStorage implements CaveStorage {
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
-        Document filter = players.find(eq(PLAYERID_KEY, record.getPlayerID())).first();
+        Bson filter = eq(PLAYERID_KEY, record.getPlayerID());
         Document updatePlayerDoc = new Document();
         updatePlayerDoc.put(PLAYERID_KEY, record.getPlayerID());
         updatePlayerDoc.put(PLAYERNAME_KEY, record.getPlayerName());
@@ -167,7 +167,9 @@ public class RealCaveStorage implements CaveStorage {
         updatePlayerDoc.put(REGION_KEY, record.getRegion().toString());
         updatePlayerDoc.put(POSITIONSTRING_KEY, record.getPositionAsString());
         updatePlayerDoc.put(SESSIONID_KEY, record.getSessionId());
-        players.replaceOne(filter, updatePlayerDoc);
+        Document update = new Document("$set", updatePlayerDoc);
+        UpdateOptions updateOptions = new UpdateOptions().upsert(true);
+        players.updateOne(filter, update, updateOptions);
     }
 
     @Override
