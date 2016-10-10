@@ -1,0 +1,3 @@
+< mongo-storage.cpf
+
+SKYCAVE_DBSERVER = mongo1:27017,mongo2:27017,mongo3:27017

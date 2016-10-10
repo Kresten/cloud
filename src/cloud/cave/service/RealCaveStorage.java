@@ -4,23 +4,18 @@ import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Direction;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.*;
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.UpdateOptions;
-import org.bson.BSON;
-import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.eq;
 
 /**
  * Created by Kresten on 29-09-2016.
@@ -50,11 +45,12 @@ public class RealCaveStorage implements CaveStorage {
     @Override
     public void initialize(ObjectManager objectManager, ServerConfiguration config) {
         this.serverConfiguration = config;
-        ServerData serverData = serverConfiguration.get(0);
-        String hostName = serverData.getHostName();
-        int portNumber = serverData.getPortNumber();
-        //FIXME We run the db in a VM, so it is the VMs localhost that we should connect to (like "192.168.99.100", 27017)
-        mongoClient = new MongoClient(hostName, portNumber);
+        List<ServerAddress> serverAddresses = new ArrayList<>();
+        for (int i = 0; i < serverConfiguration.size(); i++) {
+            ServerData serverData = serverConfiguration.get(i);
+            serverAddresses.add(new ServerAddress(serverData.getHostName(), serverData.getPortNumber()));
+        }
+        mongoClient = new MongoClient(serverAddresses);
         MongoDatabase db = mongoClient.getDatabase("CaveStorage");
         rooms = db.getCollection("rooms");
         wallMessages = db.getCollection("wallMessages");

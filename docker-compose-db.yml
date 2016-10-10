@@ -1,10 +1,8 @@
 version: '2'
 services:
   daemon:
-    #build image from Dockerfile
     build: .
     image: kresten/skycave
-    #run the image with daemon command and latest.cpf
     command: daemon -Dcpf=mongo-storage-compose.cpf
     #expose the daemon on port 37123
     ports:
@@ -13,9 +11,9 @@ services:
     depends_on:
     - mongo
   mongo:
-    #use latest mongo image
-    image: mongo
+    image: mongo:3.3.15
     container_name: mongo
-    #use smallfiles and noprealloc commands. The database is already exposed on port 27017 by default
+    #use following commands, so the database does not use up too much space.
+    #The database is already exposed on port 27017 by default, so no port commands are necessary
     command: --smallfiles --noprealloc
 
