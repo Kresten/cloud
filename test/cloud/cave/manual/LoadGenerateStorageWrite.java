@@ -2,8 +2,11 @@ package cloud.cave.manual;
 
 import java.io.File;
 
+import cloud.cave.broker.ClientRequestHandler;
+import cloud.cave.client.CaveProxy;
 import cloud.cave.config.*;
 import cloud.cave.domain.*;
+import cloud.cave.doubles.LocalMethodCallClientRequestHandler;
 import cloud.cave.server.CaveServant;
 
 /**
@@ -13,42 +16,58 @@ import cloud.cave.server.CaveServant;
  * failover.
  * <p>
  * Do NOT use this on the production server :-)
- * 
+ *
  * @author Henrik Baerbak Christensen, Aarhus University.
- * 
+ *
  */
 public class LoadGenerateStorageWrite {
+
+  private static final int NO_ROOMS_TO_DIG = 10000;
+
   public static void main(String[] args) {
-    
-    System.out.println("*** Load Generator: Generate writes in the storage ***");
-    
+
     String cpfFilename = args[0];
-    
-    CaveServerFactory factory; 
+
+    System.out.println("*** Load Generator: Generate writes in the storage ***");
+    System.out.println("  Cpf = "+cpfFilename);
+
+    CaveServerFactory factory;
     PropertyReaderStrategy envReader;
 
+    // Create the server side delegates based upon the CPF configuration
     envReader = new ChainedPropertyFileReaderStrategy(new File(cpfFilename));
     factory = new StandardServerFactory(envReader);
     ObjectManager objMgr = new StandardObjectManager(factory);
-    
+
     // Create the server side cave instance
     Cave cave = new CaveServant(objMgr);
-    
-    System.out.println("--> Cave initialized; cfg = "+cave.describeConfiguration());
+    System.out.println("--> CaveServant initialized; cfg = "+cave.describeConfiguration());
 
-    // Login reserved user
-    Login result = cave.login("reserved_aarskort", "cloudarch");
+    // Create a client request handler that does in-VM
+    // calls to the server side
+    ClientRequestHandler crh = new LocalMethodCallClientRequestHandler(objMgr.getInvoker());
+
+    // Create the cave proxy
+    Cave caveProxy = new CaveProxy(crh);
+
+    // and login Mikkel
+    Login result = caveProxy.login("mikkel_aarskort", "123");
     System.out.println("--> login result: "+result);
-    
-    // assume it went ok
+
+    if (! LoginResult.isValidLogin(result.getResultCode())) {
+      System.out.println("Not a valid user, remember you MUST use the TestStubSubscriptionService");
+      System.exit(-1);
+    }
+
+    // Now we know the player is valid, let us go to work...
     Player player = result.getPlayer();
 
     System.out.println("--> player logged into cave");
-    
-    System.out.println("** Initialized, will start digging DOWN ***");
-    
-    // Generate load
-    final int max = 10000;
+
+    System.out.println("*** Initialized, will start digging DOWN. Do the stepDown while writing! ***");
+
+    // Generate the load by digging a lot of rooms...
+    final int max = NO_ROOMS_TO_DIG;
     boolean wentOk = true;
     for (int i = 0; i < max; i++) {
       if (i%100 == 0) { System.out.print("."); }
@@ -56,8 +75,7 @@ public class LoadGenerateStorageWrite {
       String roomDescription = "This is room no. "+i;
       wentOk = player.digRoom(Direction.DOWN, roomDescription);
       if ( ! wentOk ) {
-        System.out.println("ERROR: The cave is not empty, failed on digging room at position: "+player.getPosition());
-        System.exit(-1); // Fail fast...
+        System.out.println("ERROR: The cave is not empty, failed on digging room at position: " + player.getPosition());
       }
       // move down then
       player.move(Direction.DOWN);

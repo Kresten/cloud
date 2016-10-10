@@ -1,0 +1,6 @@
+Describe shortly what kind of safe failure mode you have implemented:
+
+We have implemented try/catch clauses on all access to the database in RealCaveStorage, so our safe failure mode is preparation and repair.
+If we catch a MongoSocketReadException, which we get in a database failover, we rethrow it as a CaveStorageException with a message about the error.
+We let the Cave- and PlayerDispatcher catch these exceptions, and make replies with the error message for the Cave- and PlayerProxies to receive.
+They then create strings from the exception messages, which can be read in the terminal if an error occurs method execution.

@@ -73,7 +73,6 @@ public class RealWeatherService implements WeatherService {
             e1.printStackTrace();
         } catch (IOException e1) {
             e1.getCause();
-            System.out.println("THIS EXCEPTION SHOULD BE CAUGHT EARLIER");
             e1.printStackTrace();
         }
         return null;

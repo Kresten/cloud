@@ -149,6 +149,9 @@ public class PlayerDispatcher implements Dispatcher {
     } catch (PlayerSessionExpiredException exc) {
       reply = Marshaling.createInvalidReplyWithExplanation(StatusCode.SERVER_PLAYER_SESSION_EXPIRED_FAILURE,
           exc.getMessage());
+    } catch (CaveStorageException e) {
+      reply = Marshaling.createInvalidReplyWithExplanation(StatusCode.SERVER_FAILED_TO_LOAD_COMMAND,
+              e.getMessage());
     }
     return reply;
   }

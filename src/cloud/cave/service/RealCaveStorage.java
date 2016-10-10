@@ -1,10 +1,12 @@
 package cloud.cave.service;
 
+import cloud.cave.broker.CaveStorageException;
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Direction;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.*;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoSocketReadException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -69,129 +71,163 @@ public class RealCaveStorage implements CaveStorage {
 
     @Override
     public RoomRecord getRoom(String positionString) {
-        Document roomDoc = rooms.find(eq(POSITION_KEY, positionString)).first();
-        if (roomDoc != null) {
-            return new RoomRecord((String) roomDoc.get("description"));
-        } else {
-            return null;
+        try {
+            Document roomDoc = rooms.find(eq(POSITION_KEY, positionString)).first();
+            if (roomDoc != null) {
+                return new RoomRecord((String) roomDoc.get(DESCRIPTION_KEY));
+            }
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot get room. The database is currently unavailable ***", e);
         }
+        return null;
     }
 
     @Override
     public boolean addRoom(String positionString, RoomRecord description) {
-        RoomRecord roomRecord = getRoom(positionString);
-        if (roomRecord != null) {
-            return false;
-        } else {
-            Document roomDoc = new Document();
-            roomDoc.put(POSITION_KEY, positionString);
-            roomDoc.put(DESCRIPTION_KEY, description.description);
-            rooms.insertOne(roomDoc);
-            return true;
+        try {
+            RoomRecord roomRecord = getRoom(positionString);
+            if (roomRecord != null) {
+                return false;
+            } else {
+                Document roomDoc = new Document();
+                roomDoc.put(POSITION_KEY, positionString);
+                roomDoc.put(DESCRIPTION_KEY, description.description);
+                rooms.insertOne(roomDoc);
+                return true;
+            }
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot dig room. The database is currently unavailable ***", e);
         }
     }
 
     @Override
     public void addMessage(String positionString, String message) {
-        Document addMessageDoc = new Document();
-        addMessageDoc.put(POSITION_KEY, positionString);
-        addMessageDoc.put(MESSAGE_KEY, message);
-        wallMessages.insertOne(addMessageDoc);
+        try {
+            Document addMessageDoc = new Document();
+            addMessageDoc.put(POSITION_KEY, positionString);
+            addMessageDoc.put(MESSAGE_KEY, message);
+            wallMessages.insertOne(addMessageDoc);
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot add message to wall. The database is currently unavailable ***", e);
+        }
     }
 
     @Override
     public List<String> getMessageList(String positionString, int from, int amount) {
-        Document messageDoc = new Document(POSITION_KEY, positionString);
-        List<Document> docList = new ArrayList();
-        wallMessages.find(messageDoc).into(docList);
-        List<String> messageList = new ArrayList();
-        for (Document doc : docList) {
-            messageList.add((String) doc.get(MESSAGE_KEY));
+        try {
+            Document messageDoc = new Document(POSITION_KEY, positionString);
+            List<Document> docList = new ArrayList();
+            wallMessages.find(messageDoc).into(docList);
+            List<String> messageList = new ArrayList();
+            for (Document doc : docList) {
+                messageList.add((String) doc.get(MESSAGE_KEY));
+            }
+            int messageListSize = messageList.size();
+            if (messageListSize < from + amount) {
+                amount = messageListSize - from;
+            }
+            List<String> shortMessageList = new ArrayList<>();
+            for (int i = from; i < from + amount; i++) {
+                shortMessageList.add(messageList.get(i));
+            }
+            return shortMessageList;
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot get wall messages. The database is currently unavailable ***", e);
         }
-        int messageListSize = messageList.size();
-        if (messageListSize < from + amount) {
-            amount = messageListSize - from;
-        }
-        List<String> shortMessageList = new ArrayList<>();
-        for (int i = from; i < from + amount; i++) {
-            shortMessageList.add(messageList.get(i));
-        }
-        return shortMessageList;
     }
 
     @Override
     public List<Direction> getSetOfExitsFromRoom(String positionString) {
-        //refactor this to only use one query ($OR maybe)
-        List<Direction> listOfExits = new ArrayList<Direction>();
-        Point3 pZero = Point3.parseString(positionString);
-        Point3 p;
-        for (Direction d : Direction.values()) {
-            p = new Point3(pZero.x(), pZero.y(), pZero.z());
-            p.translate(d);
-            String position = p.getPositionString();
-            Document roomDoc = rooms.find(eq(POSITION_KEY, position)).first();
-            if (roomDoc != null) {
-                listOfExits.add(d);
+        try {
+            List<Direction> listOfExits = new ArrayList<Direction>();
+            Point3 pZero = Point3.parseString(positionString);
+            Point3 p;
+            for (Direction d : Direction.values()) {
+                p = new Point3(pZero.x(), pZero.y(), pZero.z());
+                p.translate(d);
+                String position = p.getPositionString();
+                Document roomDoc = rooms.find(eq(POSITION_KEY, position)).first();
+                if (roomDoc != null) {
+                    listOfExits.add(d);
+                }
             }
+            return listOfExits;
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot get exits. The database is currently unavailable ***", e);
         }
-        return listOfExits;
     }
 
     @Override
     public PlayerRecord getPlayerByID(String playerID) {
-        Document playerDoc = players.find(eq(PLAYERID_KEY, playerID)).first();
-        if (playerDoc != null) {
-            PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
-                    playerID,
-                    playerDoc.get(PLAYERNAME_KEY).toString(),
-                    playerDoc.get(GROUPNAME_KEY).toString(),
-                    Region.valueOf(playerDoc.get(REGION_KEY).toString())),
-                    playerDoc.get(POSITIONSTRING_KEY).toString(),
-                    playerDoc.get(SESSIONID_KEY).toString());
-            return playerRecord;
+        try {
+            Document playerDoc = players.find(eq(PLAYERID_KEY, playerID)).first();
+            if (playerDoc != null) {
+                PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
+                        playerID,
+                        playerDoc.get(PLAYERNAME_KEY).toString(),
+                        playerDoc.get(GROUPNAME_KEY).toString(),
+                        Region.valueOf(playerDoc.get(REGION_KEY).toString())),
+                        playerDoc.get(POSITIONSTRING_KEY).toString(),
+                        playerDoc.get(SESSIONID_KEY).toString());
+                return playerRecord;
+            }
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot find player. The database is currently unavailable ***", e);
         }
         return null;
     }
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
-        Bson filter = eq(PLAYERID_KEY, record.getPlayerID());
-        Document updatePlayerDoc = new Document();
-        updatePlayerDoc.put(PLAYERID_KEY, record.getPlayerID());
-        updatePlayerDoc.put(PLAYERNAME_KEY, record.getPlayerName());
-        updatePlayerDoc.put(GROUPNAME_KEY, record.getGroupName());
-        updatePlayerDoc.put(REGION_KEY, record.getRegion().toString());
-        updatePlayerDoc.put(POSITIONSTRING_KEY, record.getPositionAsString());
-        updatePlayerDoc.put(SESSIONID_KEY, record.getSessionId());
-        Document update = new Document("$set", updatePlayerDoc);
-        UpdateOptions updateOptions = new UpdateOptions().upsert(true);
-        players.updateOne(filter, update, updateOptions);
+        try {
+            Bson filter = eq(PLAYERID_KEY, record.getPlayerID());
+            Document updatePlayerDoc = new Document();
+            updatePlayerDoc.put(PLAYERID_KEY, record.getPlayerID());
+            updatePlayerDoc.put(PLAYERNAME_KEY, record.getPlayerName());
+            updatePlayerDoc.put(GROUPNAME_KEY, record.getGroupName());
+            updatePlayerDoc.put(REGION_KEY, record.getRegion().toString());
+            updatePlayerDoc.put(POSITIONSTRING_KEY, record.getPositionAsString());
+            updatePlayerDoc.put(SESSIONID_KEY, record.getSessionId());
+            Document update = new Document("$set", updatePlayerDoc);
+            UpdateOptions updateOptions = new UpdateOptions().upsert(true);
+            players.updateOne(filter, update, updateOptions);
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot update player. The database is currently unavailable ***", e);
+        }
     }
 
     @Override
     public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
-        List<PlayerRecord> theList = new ArrayList<PlayerRecord>();
-        Document playerDoc = new Document(POSITIONSTRING_KEY, positionString);
-        List<Document> docList = new ArrayList();
-        players.find(playerDoc).into(docList);
-        for (Document doc : docList) {
-            PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
-                    (String) doc.get(PLAYERID_KEY),
-                    (String) doc.get(PLAYERNAME_KEY),
-                    (String) doc.get(GROUPNAME_KEY),
-                    Region.valueOf((String) doc.get(REGION_KEY))),
-                    (String) doc.get(POSITIONSTRING_KEY),
-                    (String) doc.get(SESSIONID_KEY));
-            if (playerRecord.isInCave() && playerRecord.getPositionAsString().equals(positionString)) {
-                theList.add(playerRecord);
+        try {
+            List<PlayerRecord> theList = new ArrayList<PlayerRecord>();
+            Document playerDoc = new Document(POSITIONSTRING_KEY, positionString);
+            List<Document> docList = new ArrayList();
+            players.find(playerDoc).into(docList);
+            for (Document doc : docList) {
+                PlayerRecord playerRecord = new PlayerRecord(new SubscriptionRecord(
+                        (String) doc.get(PLAYERID_KEY),
+                        (String) doc.get(PLAYERNAME_KEY),
+                        (String) doc.get(GROUPNAME_KEY),
+                        Region.valueOf((String) doc.get(REGION_KEY))),
+                        (String) doc.get(POSITIONSTRING_KEY),
+                        (String) doc.get(SESSIONID_KEY));
+                if (playerRecord.isInCave() && playerRecord.getPositionAsString().equals(positionString)) {
+                    theList.add(playerRecord);
+                }
             }
+            return theList;
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot compute list of players. The database is currently unavailable ***", e);
         }
-        return theList;
     }
 
     @Override
     public int computeCountOfActivePlayers() {
-        return getPlayerList().size();
+        try {
+            return getPlayerList().size();
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException("*** Cannot compute number of active players. The database is currently unavailable ***", e);
+        }
     }
 
     /**

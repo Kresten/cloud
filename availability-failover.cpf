@@ -1,0 +1,6 @@
+# for replica sets with LoadGenerateStorageWrite, use subscripiton test stub
+< mongo-replica.cpf
+
+# = Subscription service
+SKYCAVE_SUBSCRIPTION_IMPLEMENTATION = cloud.cave.doubles.TestStubSubscriptionService
+SKYCAVE_SUBSCRIPTIONSERVER = localhost:42042
