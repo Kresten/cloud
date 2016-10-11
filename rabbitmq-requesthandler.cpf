@@ -1,0 +1,5 @@
+< subscription-service.cpf
+
+# === Configure for socket communication on client and app server side
+SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitClientRequestHandler
+SKYCAVE_SERVERREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitServerRequestHandler

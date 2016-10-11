@@ -14,77 +14,77 @@ import cloud.cave.server.common.ServerConfiguration;
  * request handler here uses the HTTP way of using sockets, that is, for each
  * request a client socket is created, the payload sent, and then the connection
  * is closed.
- * 
+ *
  * @author Henrik Baerbak Christensen, University of Aarhus
  */
 public class SocketClientRequestHandler implements ClientRequestHandler {
-  private int portNumber;
-  private String hostName;
-  private PrintWriter out;
-  private BufferedReader in;
-  private boolean disconnected;
+    private int portNumber;
+    private String hostName;
+    private PrintWriter out;
+    private BufferedReader in;
+    private boolean disconnected;
 
-  public SocketClientRequestHandler() {
-    hostName = null;
-    portNumber = -1; 
-  }
-  
-  @Override
-  public void initialize(ServerConfiguration config) {
-    hostName = config.get(0).getHostName();
-    portNumber = config.get(0).getPortNumber();
-  }
-
-  @Override
-  public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
-      throws CaveIPCException {
-
-    Socket clientSocket = null;
-    // Create the socket to the host
-    if (disconnected){
-      throw new CaveIPCException("Disconnected from server", null);
-    }
-    try {
-      clientSocket = new Socket(hostName, portNumber);
-      out = new PrintWriter(clientSocket.getOutputStream(), true);
-      in = new BufferedReader(new InputStreamReader(
-          clientSocket.getInputStream()));
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      disconnected = true;
-      throw new CaveIPCException("Disconnected from server",e);
+    public SocketClientRequestHandler() {
+        hostName = null;
+        portNumber = -1;
     }
 
-    // Send the JSON request as a string to the app server
-    out.println(requestJson.toString());
-
-    // Block until a reply is received, and parse it into JSON
-    String reply;
-    JSONObject replyJson = null;
-    try {
-      reply = in.readLine();
-      // System.out.println("--< reply: "+ reply.toString());
-
-      JSONParser parser = new JSONParser();
-      replyJson = (JSONObject) parser.parse(reply);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
-      e.printStackTrace();
+    @Override
+    public void initialize(ServerConfiguration config) {
+        hostName = config.get(0).getHostName();
+        portNumber = config.get(0).getPortNumber();
     }
 
-    // ... and close the connection
-    try {
-      clientSocket.close();
-    } catch (IOException e) {
-      e.printStackTrace();
+    @Override
+    public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
+            throws CaveIPCException {
+
+        Socket clientSocket = null;
+        // Create the socket to the host
+        if (disconnected) {
+            throw new CaveIPCException("Disconnected from server", null);
+        }
+        try {
+            clientSocket = new Socket(hostName, portNumber);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(
+                    clientSocket.getInputStream()));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            disconnected = true;
+            throw new CaveIPCException("Disconnected from server", e);
+        }
+
+        // Send the JSON request as a string to the app server
+        out.println(requestJson.toString());
+
+        // Block until a reply is received, and parse it into JSON
+        String reply;
+        JSONObject replyJson = null;
+        try {
+            reply = in.readLine();
+            // System.out.println("--< reply: "+ reply.toString());
+
+            JSONParser parser = new JSONParser();
+            replyJson = (JSONObject) parser.parse(reply);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        // ... and close the connection
+        try {
+            clientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return replyJson;
     }
-    return replyJson;
-  }
-  
-  public String toString() {
-    return "AppServer Cfg: "+hostName+":"+portNumber+".";
-  }
+
+    public String toString() {
+        return "AppServer Cfg: " + hostName + ":" + portNumber + ".";
+    }
 
 }

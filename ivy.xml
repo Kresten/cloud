@@ -33,6 +33,8 @@
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
         <dependency org="org.mongodb" name="mongo-java-driver" rev="3.3.0"/>
 
+        <!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
+        <dependency org="com.rabbitmq" name="amqp-client" rev="3.6.5"/>
 
         <!-- jBCrypt for password prototection -->
         <dependency org="org.mindrot"

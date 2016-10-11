@@ -1,0 +1,5 @@
+# use the mongo config
+< mongo-storage.cpf
+
+# overwrite app server
+SKYCAVE_APPSERVER = 138.68.67.18:37123
