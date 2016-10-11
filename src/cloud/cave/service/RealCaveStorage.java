@@ -117,20 +117,12 @@ public class RealCaveStorage implements CaveStorage {
         try {
             Document messageDoc = new Document(POSITION_KEY, positionString);
             List<Document> docList = new ArrayList();
-            wallMessages.find(messageDoc).into(docList);
+            wallMessages.find(messageDoc).skip(from).limit(amount).into(docList);
             List<String> messageList = new ArrayList();
             for (Document doc : docList) {
                 messageList.add((String) doc.get(MESSAGE_KEY));
             }
-            int messageListSize = messageList.size();
-            if (messageListSize < from + amount) {
-                amount = messageListSize - from;
-            }
-            List<String> shortMessageList = new ArrayList<>();
-            for (int i = from; i < from + amount; i++) {
-                shortMessageList.add(messageList.get(i));
-            }
-            return shortMessageList;
+            return messageList;
         } catch (MongoSocketReadException e) {
             throw new CaveStorageException("*** Cannot get wall messages. The database is currently unavailable ***", e);
         }
