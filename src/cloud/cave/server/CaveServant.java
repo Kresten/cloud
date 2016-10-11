@@ -50,30 +50,22 @@ public class CaveServant implements Cave, Servant {
     public Login login(String loginName, String password) {
         Login result = null;
         SubscriptionService subscriptionService = objectManager.getSubscriptionService();
-        System.out.println("LOGGING IN LEL");
         // Fetch the subscription for the given loginName
         SubscriptionRecord subscription = null;
         String errorMsg = null;
         try {
             subscription = subscriptionService.lookup(loginName, password);
-            System.out.println("LOOKING UP SUB");
 
         } catch (CaveIPCException e) {
             errorMsg = "Lookup failed on subscription service due to IPC exception:" + e.getMessage();
             logger.error(errorMsg);
-            System.out.println("EXCEPTION IPC");
-
         }
 
         if (subscription == null) {
-            System.out.println("SUB IS NULL");
-
             return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
         }
         // Check all the error conditions and 'fail fast' on them...
         if (subscription.getErrorCode() == SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN) {
-            System.out.println("ERROR CODE IS GAY");
-
             return new LoginRecord(LoginResult.LOGIN_FAILED_UNKNOWN_SUBSCRIPTION);
         }
 
@@ -87,8 +79,6 @@ public class CaveServant implements Cave, Servant {
         // (which may overwrite an already ongoing session which is then
         // implicitly invalidated).
         LoginResult theResult = startPlayerSession(subscription, sessionID);
-        System.out.println("VALID LOGIN???");
-
         boolean validLogin = LoginResult.isValidLogin(theResult);
         if (!validLogin) {
             return new LoginRecord(theResult);
@@ -96,8 +86,6 @@ public class CaveServant implements Cave, Servant {
 
         // Create player domain object
         Player player = new PlayerServant(playerID, objectManager);
-
-        System.out.println("ADDING PLAYER TO CACHE");
 
         // Cache the player session for faster lookups
         objectManager.getPlayerSessionCache().add(playerID, player);
