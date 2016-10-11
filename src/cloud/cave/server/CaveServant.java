@@ -17,174 +17,183 @@ import cloud.cave.service.*;
  * behavior.
  *
  * @author Henrik Baerbak Christensen, Aarhus University.
- *
  */
 public class CaveServant implements Cave, Servant {
 
-  private ObjectManager objectManager;
+    private ObjectManager objectManager;
 
-  private Logger logger;
+    private Logger logger;
 
-  /**
-   * Construct the Cave servant object with the delegates/dependencies given by
-   * the object manager.
-   *
-   * @param objectManager
-   *          object manager holding all delegates to collaborate with
-   */
-  public CaveServant(ObjectManager objectManager) {
-    this.objectManager = objectManager;
+    /**
+     * Construct the Cave servant object with the delegates/dependencies given by
+     * the object manager.
+     *
+     * @param objectManager object manager holding all delegates to collaborate with
+     */
+    public CaveServant(ObjectManager objectManager) {
+        this.objectManager = objectManager;
 
-    logger = LoggerFactory.getLogger(CaveServant.class);
-  }
-
-  /**
-   * Given a loginName and password (like '201017201','123') contact the
-   * subscription storage to validate that the player is a subscriber. If valid,
-   * create the player avatar. Return the result of the login
-   *
-   * @param loginName
-   *          the loginName which the player uses to identify his/her account in
-   *          the cave
-   * @param password
-   *          the password associated with the account
-   * @return the result of the login
-   */
-  @Override
-  public Login login(String loginName, String password) {
-    Login result = null;
-    SubscriptionService subscriptionService = objectManager.getSubscriptionService();
-
-    // Fetch the subscription for the given loginName
-    SubscriptionRecord subscription = null;
-    String errorMsg = null;
-    try {
-      subscription = subscriptionService.lookup(loginName, password);
-    } catch (CaveIPCException e) {
-      errorMsg="Lookup failed on subscription service due to IPC exception:"+e.getMessage();
-      logger.error(errorMsg);
+        logger = LoggerFactory.getLogger(CaveServant.class);
     }
 
-    if (subscription==null) {
-      return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
-    }
-    // Check all the error conditions and 'fail fast' on them...
-    if (subscription.getErrorCode() == SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN) {
-      return new LoginRecord(LoginResult.LOGIN_FAILED_UNKNOWN_SUBSCRIPTION);
-    }
+    /**
+     * Given a loginName and password (like '201017201','123') contact the
+     * subscription storage to validate that the player is a subscriber. If valid,
+     * create the player avatar. Return the result of the login
+     *
+     * @param loginName the loginName which the player uses to identify his/her account in
+     *                  the cave
+     * @param password  the password associated with the account
+     * @return the result of the login
+     */
+    @Override
+    public Login login(String loginName, String password) {
+        Login result = null;
+        SubscriptionService subscriptionService = objectManager.getSubscriptionService();
+        System.out.println("LOGGING IN LEL");
+        // Fetch the subscription for the given loginName
+        SubscriptionRecord subscription = null;
+        String errorMsg = null;
+        try {
+            subscription = subscriptionService.lookup(loginName, password);
+            System.out.println("LOOKING UP SUB");
 
-    // Now the subscription is assumed to be a valid player
-    String playerID = subscription.getPlayerID();
+        } catch (CaveIPCException e) {
+            errorMsg = "Lookup failed on subscription service due to IPC exception:" + e.getMessage();
+            logger.error(errorMsg);
+            System.out.println("EXCEPTION IPC");
 
-    // Create id of session as a random UUID
-    String sessionID = UUID.randomUUID().toString();
+        }
 
-    // Enter the player, creating the player's session in the cave
-    // (which may overwrite an already ongoing session which is then
-    // implicitly invalidated).
-    LoginResult theResult = startPlayerSession(subscription, sessionID);
+        if (subscription == null) {
+            System.out.println("SUB IS NULL");
 
-    boolean validLogin = LoginResult.isValidLogin(theResult);
-    if ( ! validLogin ) {
-      return new LoginRecord(theResult);
-    }
+            return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
+        }
+        // Check all the error conditions and 'fail fast' on them...
+        if (subscription.getErrorCode() == SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN) {
+            System.out.println("ERROR CODE IS GAY");
 
-    // Create player domain object
-    Player player = new PlayerServant(playerID, objectManager);
+            return new LoginRecord(LoginResult.LOGIN_FAILED_UNKNOWN_SUBSCRIPTION);
+        }
 
-    // Cache the player session for faster lookups
-    objectManager.getPlayerSessionCache().add(playerID, player);
+        // Now the subscription is assumed to be a valid player
+        String playerID = subscription.getPlayerID();
 
-    // And finalize the login result
-    result = new LoginRecord(player, theResult);
+        // Create id of session as a random UUID
+        String sessionID = UUID.randomUUID().toString();
 
-    return result;
-  }
+        // Enter the player, creating the player's session in the cave
+        // (which may overwrite an already ongoing session which is then
+        // implicitly invalidated).
+        LoginResult theResult = startPlayerSession(subscription, sessionID);
+        System.out.println("VALID LOGIN???");
 
-  /** Initialize a player session by updating/preparing the storage system
-   * and potentially clear the cache of previous sessions.
-   * @param subscription the record of the subscription to start a session on
-   * @param sessionID ID of the session assigned to this login
-   * @return result of the login which is always a valid login, but
-   * may signal a 'second login' that overrules a previous one.
-   */
-  private LoginResult startPlayerSession(SubscriptionRecord subscription,
-      String sessionID) {
-    LoginResult result = LoginResult.LOGIN_SUCCESS; // Assume success
+        boolean validLogin = LoginResult.isValidLogin(theResult);
+        if (!validLogin) {
+            return new LoginRecord(theResult);
+        }
 
-    CaveStorage storage = objectManager.getCaveStorage();
+        // Create player domain object
+        Player player = new PlayerServant(playerID, objectManager);
 
-    // get the record of the player from storage
-    PlayerRecord playerRecord = storage.getPlayerByID(subscription.getPlayerID());
+        System.out.println("ADDING PLAYER TO CACHE");
 
-    if (playerRecord == null) {
-      // Apparently a newly registered player, so create the record
-      // and add it to the cave storage
-      String position = new Point3(0, 0, 0).getPositionString();
-      playerRecord = new PlayerRecord(subscription, position, sessionID);
-      storage.updatePlayerRecord(playerRecord);
-    } else {
-      // Player has been seen before; if he/she has an existing
-      // session ("= is in cave") we flag this as a warning,
-      // and clear the cache entry
-      if (playerRecord.isInCave()) {
-        result = LoginResult.LOGIN_SUCCESS_PLAYER_ALREADY_LOGGED_IN;
-      }
-      // update the session id in the storage system
-      playerRecord.setSessionId(sessionID);
-      storage.updatePlayerRecord(playerRecord);
-    }
+        // Cache the player session for faster lookups
+        objectManager.getPlayerSessionCache().add(playerID, player);
 
-    return result;
-  }
+        // And finalize the login result
+        result = new LoginRecord(player, theResult);
 
-  @Override
-  public LogoutResult logout(String playerID) {
-    CaveStorage storage = objectManager.getCaveStorage();
-
-    // ensure that the player is known by and in the cave
-    PlayerRecord player = storage.getPlayerByID(playerID);
-
-    if (!player.isInCave()) {
-      return LogoutResult.PLAYER_NOT_IN_CAVE;
+        return result;
     }
 
-    // reset the session  to indicate the player is no longer around
-    player.setSessionId(null);
+    /**
+     * Initialize a player session by updating/preparing the storage system
+     * and potentially clear the cache of previous sessions.
+     *
+     * @param subscription the record of the subscription to start a session on
+     * @param sessionID    ID of the session assigned to this login
+     * @return result of the login which is always a valid login, but
+     * may signal a 'second login' that overrules a previous one.
+     */
+    private LoginResult startPlayerSession(SubscriptionRecord subscription,
+                                           String sessionID) {
+        LoginResult result = LoginResult.LOGIN_SUCCESS; // Assume success
 
-    // and update the record in the storage
-    storage.updatePlayerRecord(player);
+        CaveStorage storage = objectManager.getCaveStorage();
 
-    // and clean up the cache
-    objectManager.getPlayerSessionCache().remove(playerID);
+        // get the record of the player from storage
+        PlayerRecord playerRecord = storage.getPlayerByID(subscription.getPlayerID());
 
-    return LogoutResult.SUCCESS;
-  }
+        if (playerRecord == null) {
+            // Apparently a newly registered player, so create the record
+            // and add it to the cave storage
+            String position = new Point3(0, 0, 0).getPositionString();
+            playerRecord = new PlayerRecord(subscription, position, sessionID);
+            storage.updatePlayerRecord(playerRecord);
+        } else {
+            // Player has been seen before; if he/she has an existing
+            // session ("= is in cave") we flag this as a warning,
+            // and clear the cache entry
+            if (playerRecord.isInCave()) {
+                result = LoginResult.LOGIN_SUCCESS_PLAYER_ALREADY_LOGGED_IN;
+            }
+            // update the session id in the storage system
+            playerRecord.setSessionId(sessionID);
+            storage.updatePlayerRecord(playerRecord);
+        }
 
-  @Override
-  public String describeConfiguration() {
-    CaveStorage storage = objectManager.getCaveStorage();
-    SubscriptionService subscriptionService = objectManager.getSubscriptionService();
-    WeatherService weatherService = objectManager.getWeatherService();
-    PlayerSessionCache sessionCache = objectManager.getPlayerSessionCache();
-    Inspector inspector = objectManager.getInspector();
+        return result;
+    }
 
-    String cfg = "CaveServant configuration:\n";
-    cfg += "  CaveStorage: " + storage.getClass().getName() + "\n";
-    cfg += "   - cfg: " + storage.getConfiguration() + "\n";
-    cfg += "  SubscriptionService: "+ subscriptionService.getClass().getName() + "\n";
-    cfg += "   - cfg: " + subscriptionService.getConfiguration() + "\n";
-    cfg += "  WeatherService: "+ weatherService.getClass().getName() + "\n";
-    cfg += "   - cfg: " + weatherService.getConfiguration() + "\n";
-    cfg += "  PlayerSessionCache: "+ sessionCache.getClass().getName() + "\n";
-    cfg += "   - cfg: " + sessionCache.getConfiguration() + "\n";
-    cfg += "  Inspector: "+inspector.getClass().getName() + "\n";
-    cfg += "   - cfg: " + inspector.getConfiguration() + "\n";
-    return cfg;
-  }
+    @Override
+    public LogoutResult logout(String playerID) {
+        CaveStorage storage = objectManager.getCaveStorage();
 
-  @Deprecated
-  public PlayerSessionCache getCache() {
-   return objectManager.getPlayerSessionCache();
-  }
+        // ensure that the player is known by and in the cave
+        PlayerRecord player = storage.getPlayerByID(playerID);
+
+        if (!player.isInCave()) {
+            return LogoutResult.PLAYER_NOT_IN_CAVE;
+        }
+
+        // reset the session  to indicate the player is no longer around
+        player.setSessionId(null);
+
+        // and update the record in the storage
+        storage.updatePlayerRecord(player);
+
+        // and clean up the cache
+        objectManager.getPlayerSessionCache().remove(playerID);
+
+        return LogoutResult.SUCCESS;
+    }
+
+    @Override
+    public String describeConfiguration() {
+        CaveStorage storage = objectManager.getCaveStorage();
+        SubscriptionService subscriptionService = objectManager.getSubscriptionService();
+        WeatherService weatherService = objectManager.getWeatherService();
+        PlayerSessionCache sessionCache = objectManager.getPlayerSessionCache();
+        Inspector inspector = objectManager.getInspector();
+
+        String cfg = "CaveServant configuration:\n";
+        cfg += "  CaveStorage: " + storage.getClass().getName() + "\n";
+        cfg += "   - cfg: " + storage.getConfiguration() + "\n";
+        cfg += "  SubscriptionService: " + subscriptionService.getClass().getName() + "\n";
+        cfg += "   - cfg: " + subscriptionService.getConfiguration() + "\n";
+        cfg += "  WeatherService: " + weatherService.getClass().getName() + "\n";
+        cfg += "   - cfg: " + weatherService.getConfiguration() + "\n";
+        cfg += "  PlayerSessionCache: " + sessionCache.getClass().getName() + "\n";
+        cfg += "   - cfg: " + sessionCache.getConfiguration() + "\n";
+        cfg += "  Inspector: " + inspector.getClass().getName() + "\n";
+        cfg += "   - cfg: " + inspector.getConfiguration() + "\n";
+        return cfg;
+    }
+
+    @Deprecated
+    public PlayerSessionCache getCache() {
+        return objectManager.getPlayerSessionCache();
+    }
 }

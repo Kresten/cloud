@@ -2,8 +2,10 @@ package cloud.cave.config.socket;
 
 import cloud.cave.broker.CaveIPCException;
 import cloud.cave.broker.ClientRequestHandler;
+import cloud.cave.config.RabbitMQConfig;
 import cloud.cave.server.common.ServerConfiguration;
 import com.rabbitmq.client.*;
+import org.apache.http.entity.ContentType;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -37,17 +39,19 @@ public class RabbitClientRequestHandler implements ClientRequestHandler {
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
+
             replyQueueName = channel.queueDeclare().getQueue();
             consumer = new QueueingConsumer(channel);
             channel.basicConsume(replyQueueName, true, consumer);
+
             AMQP.BasicProperties properties = new AMQP.BasicProperties
                     .Builder()
+                    .contentType(String.valueOf(ContentType.APPLICATION_JSON))
                     .correlationId(corrId)
                     .replyTo(replyQueueName)
                     .build();
 
-
-            channel.basicPublish("", replyQueueName, properties, requestJson.toJSONString().getBytes());
+            channel.basicPublish("", RabbitMQConfig.RPC_QUEUE_NAME, properties, requestJson.toJSONString().getBytes());
             while (true) {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery();
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
@@ -56,7 +60,6 @@ public class RabbitClientRequestHandler implements ClientRequestHandler {
                     break;
                 }
             }
-
         } catch (IOException | InterruptedException | ParseException | TimeoutException e) {
             e.printStackTrace();
         }

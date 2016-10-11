@@ -1,5 +1,8 @@
 < subscription-service.cpf
 
-# === Configure for socket communication on client and app server side
+# === Configure for rabbitmq connections
 SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitClientRequestHandler
 SKYCAVE_SERVERREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitServerRequestHandler
+
+# === Configure for server to run with rabbitmq
+SKYCAVE_APPSERVER = localhost:5672
