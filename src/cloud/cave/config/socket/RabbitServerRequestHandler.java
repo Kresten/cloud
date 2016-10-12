@@ -55,6 +55,9 @@ public class RabbitServerRequestHandler implements ServerRequestHandler {
             channel.queueDeclare(RabbitMQConfig.RPC_QUEUE_NAME, false, false, false, null);
             channel.basicQos(1);
 
+            channel.exchangeDeclare(RabbitMQConfig.RPC_EXCHANGE_NAME, "direct");
+            channel.queueBind(channel.queueDeclare().getQueue(), RabbitMQConfig.RPC_EXCHANGE_NAME,"");
+
             QueueingConsumer consumer = new QueueingConsumer(channel);
             channel.basicConsume(RabbitMQConfig.RPC_QUEUE_NAME, false, consumer);
 
@@ -74,7 +77,7 @@ public class RabbitServerRequestHandler implements ServerRequestHandler {
                 reply = invoker.handleRequest(requestJson);
                 System.out.println("--< [REPLY] " + reply);
 
-                channel.basicPublish("", properties.getReplyTo(), replyProperties, reply.toJSONString().getBytes());
+                channel.basicPublish(RabbitMQConfig.RPC_EXCHANGE_NAME, properties.getReplyTo(), replyProperties, reply.toJSONString().getBytes());
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
         } catch (IOException | TimeoutException | InterruptedException e) {

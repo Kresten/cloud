@@ -1,6 +1,6 @@
 version: '2'
 services:
-  #to build 3 daemons, use docker-compose -fdocker-compose-mq.yml scale daemon=3.
+  #to build 3 daemons, use docker-compose -f docker-compose-mq.yml scale daemon=3.
   #I feel that is prettier than copying three daemons in the compose file
   daemon:
     image: kresten/skycave
