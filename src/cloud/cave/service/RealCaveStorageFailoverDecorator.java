@@ -6,7 +6,7 @@ import cloud.cave.domain.Direction;
 import cloud.cave.server.common.PlayerRecord;
 import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
-import com.mongodb.MongoSocketReadException;
+import com.mongodb.MongoException;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public RoomRecord getRoom(String positionString) {
         try {
             return decoratee.getRoom(positionString);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot get room. The database is currently unavailable ***", e);
         }
     }
@@ -34,8 +34,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public boolean addRoom(String positionString, RoomRecord description) {
         try {
             return decoratee.addRoom(positionString, description);
-        } catch (
-                MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot dig room. The database is currently unavailable ***", e);
         }
 
@@ -45,7 +44,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public void addMessage(String positionString, String message) {
         try {
             decoratee.addMessage(positionString, message);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot add message to wall. The database is currently unavailable ***", e);
         }
     }
@@ -54,7 +53,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public List<String> getMessageList(String positionString, int from, int amount) {
         try {
             return decoratee.getMessageList(positionString, from, amount);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot get wall messages. The database is currently unavailable ***", e);
         }
     }
@@ -63,7 +62,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public List<Direction> getSetOfExitsFromRoom(String positionString) {
         try {
             return decoratee.getSetOfExitsFromRoom(positionString);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot get exits. The database is currently unavailable ***", e);
         }
     }
@@ -72,7 +71,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public PlayerRecord getPlayerByID(String playerID) {
         try {
             return decoratee.getPlayerByID(playerID);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot find player. The database is currently unavailable ***", e);
         }
     }
@@ -81,7 +80,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public void updatePlayerRecord(PlayerRecord record) {
         try {
             decoratee.updatePlayerRecord(record);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot update player. The database is currently unavailable ***", e);
         }
     }
@@ -90,7 +89,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
         try {
             return decoratee.computeListOfPlayersAt(positionString);
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot compute list of players. The database is currently unavailable ***", e);
         }
     }
@@ -99,7 +98,7 @@ public class RealCaveStorageFailoverDecorator implements CaveStorage {
     public int computeCountOfActivePlayers() {
         try {
             return decoratee.computeCountOfActivePlayers();
-        } catch (MongoSocketReadException e) {
+        } catch (MongoException e) {
             throw new CaveStorageException("*** Cannot compute number of active players. The database is currently unavailable ***", e);
         }
     }
