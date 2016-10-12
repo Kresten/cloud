@@ -1,0 +1,22 @@
+version: '2'
+services:
+  #to build 3 daemons, use docker-compose -fdocker-compose-mq.yml scale daemon=3.
+  #I feel that is prettier than copying three daemons in the compose file
+  daemon:
+    image: kresten/skycave
+    command: daemon -Dcpf=rabbitmq-compose.cpf
+    #since the daemon depends on mongo and rabbit, these images are build before the daemon
+    depends_on:
+    - mongo
+    - rabbit
+  mongo:
+    image: mongo:3.3.15
+    container_name: mongo
+    #use following commands, so the database does not use up too much space.
+    command: --smallfiles --noprealloc
+  #build the rabbitmq load balancer exposed on port 5672
+  rabbit:
+    image: rabbitmq:3
+    container_name: rabbit
+    ports:
+    - "5672:5672"

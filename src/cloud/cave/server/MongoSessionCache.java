@@ -2,10 +2,7 @@ package cloud.cave.server;
 
 import cloud.cave.config.ObjectManager;
 import cloud.cave.domain.Player;
-import cloud.cave.server.common.PlayerRecord;
-import cloud.cave.server.common.Point3;
-import cloud.cave.server.common.ServerConfiguration;
-import cloud.cave.server.common.ServerData;
+import cloud.cave.server.common.*;
 import cloud.cave.service.CaveStorage;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
@@ -24,30 +21,52 @@ public class MongoSessionCache implements PlayerSessionCache {
 
     private CaveStorage storage;
     private ServerConfiguration serverConfiguration;
+    private ObjectManager objectManager;
 
 
     @Override
     public void initialize(ObjectManager objMgr, ServerConfiguration config) {
+        objectManager = objMgr;
         storage = objMgr.getCaveStorage();
         serverConfiguration = config;
     }
 
     @Override
     public Player get(String playerID) {
-        //maybe make method that gets player instead of playerRecord
-        PlayerRecord playerByID = storage.getPlayerByID(playerID);
-        playerByID.getSessionId();
-        return null;
+        //Using the approach Henrik talks about in TestLoadBalancing
+        //Just creating a new player object, although he says "Never call this constructor directly"
+        PlayerRecord playerRec = storage.getPlayerByID(playerID);
+        return new PlayerServant(playerRec.getPlayerID(), objectManager);
     }
 
     @Override
     public void add(String playerID, Player player) {
-        //add the player to storage somehow
+        //upserting new Players in the database
+        PlayerServant playerServant = new PlayerServant(playerID, objectManager);
+        PlayerRecord playerRecord = new PlayerRecord(
+                new SubscriptionRecord(
+                        playerServant.getID(),
+                        playerServant.getName(),
+                        playerServant.getGroupName(),
+                        playerServant.getRegion()),
+                playerServant.getPosition(),
+                playerServant.getSessionID());
+        storage.updatePlayerRecord(playerRecord);
     }
 
     @Override
     public void remove(String playerID) {
-        //remove from storage by playerID
+        //if sessionId is null, it means the player is not active
+        PlayerServant playerServant = new PlayerServant(playerID, objectManager);
+        PlayerRecord playerRecord = new PlayerRecord(
+                new SubscriptionRecord(
+                        playerServant.getID(),
+                        playerServant.getName(),
+                        playerServant.getGroupName(),
+                        playerServant.getRegion()),
+                playerServant.getPosition(),
+                null);
+        storage.updatePlayerRecord(playerRecord);
     }
 
     @Override

@@ -1,0 +1,6 @@
+# use the operations config
+< rabbitmq-operations.cpf
+
+SKYCAVE_APPSERVER = rabbit:5672
+
+SKYCAVE_DBSERVER = mongo:27017

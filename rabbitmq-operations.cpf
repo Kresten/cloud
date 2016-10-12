@@ -1,8 +1,9 @@
-< subscription-service.cpf
+# use the mongo config
+< mongo-storage.cpf
+
+# overwrite app server to run with rabbitmq
+SKYCAVE_APPSERVER = 138.68.67.18:5672
 
 # === Configure for rabbitmq connections
 SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitClientRequestHandler
 SKYCAVE_SERVERREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitServerRequestHandler
-
-# === Configure for server to run with rabbitmq
-SKYCAVE_APPSERVER = rabbit:5672
