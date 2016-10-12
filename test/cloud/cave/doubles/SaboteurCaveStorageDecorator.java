@@ -6,7 +6,7 @@ import cloud.cave.server.common.PlayerRecord;
 import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
-import com.mongodb.MongoSocketReadException;
+import com.mongodb.*;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SaboteurCaveStorageDecorator implements CaveStorage {
             count++;
             return decoratee.addRoom(positionString, description);
         } else {
-            throw new MongoSocketReadException("This is a faked exception", null);
+            throw new MongoException("This is a faked exception", null);
         }
     }
 
@@ -49,7 +49,7 @@ public class SaboteurCaveStorageDecorator implements CaveStorage {
             count++;
             decoratee.addMessage(positionString, message);
         } else {
-            throw new MongoSocketReadException("This is a faked exception", null);
+            throw new MongoSocketException("This is a faked exception", null);
         }
     }
 
@@ -59,7 +59,7 @@ public class SaboteurCaveStorageDecorator implements CaveStorage {
             count++;
             return decoratee.getMessageList(positionString, from, amount);
         } else {
-            throw new MongoSocketReadException("This is a faked exception", null);
+            throw new MongoSocketClosedException("This is a faked exception", null);
         }
     }
 
@@ -69,7 +69,7 @@ public class SaboteurCaveStorageDecorator implements CaveStorage {
             count++;
             return decoratee.getSetOfExitsFromRoom(positionString);
         } else {
-            throw new MongoSocketReadException("This is a faked exception", null);
+            throw new MongoClientException("This is a faked exception", null);
         }
     }
 
