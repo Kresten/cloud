@@ -4,4 +4,23 @@ DigitalOcean IP: 138.68.67.18
 
 Nice docker remove all cmd: docker rm `docker ps --no-trunc -aq`
 
+Run commands: docker exec *container_name*
+
 Construct Docker-image from Dockerfile: docker build -t *navn* .
+
+
+
+For replica sets in mongoDb I used:
+http://www.sohamkamani.com/blog/2016/06/30/docker-mongo-replica-set/
+
+remember image rabbitmq:3-management for management server
+
+http://www.rabbitmq.com/clustering.html
+for clustering rabbitMq use the compose file
+
+rabbit2 rabbitmqctl stop_app
+rabbit2 rabbitmqctl join_cluster rabbit@rabbit1
+rabbit2 rabbitmqctl start_app
+
+
+rabbitmqctl set_policy ha-skycave "^skycave\." '{"ha-mode":"all"}'

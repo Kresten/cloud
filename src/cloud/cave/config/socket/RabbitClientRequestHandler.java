@@ -40,8 +40,6 @@ public class RabbitClientRequestHandler implements ClientRequestHandler {
             connection = factory.newConnection();
             channel = connection.createChannel();
 
-            channel.exchangeDeclare(RabbitMQConfig.RPC_EXCHANGE_NAME, "direct");
-
             replyQueueName = channel.queueDeclare().getQueue();
             consumer = new QueueingConsumer(channel);
             channel.basicConsume(replyQueueName, true, consumer);
@@ -53,7 +51,7 @@ public class RabbitClientRequestHandler implements ClientRequestHandler {
                     .replyTo(replyQueueName)
                     .build();
 
-            channel.basicPublish(RabbitMQConfig.RPC_EXCHANGE_NAME, "", properties, requestJson.toJSONString().getBytes());
+            channel.basicPublish("", RabbitMQConfig.RPC_QUEUE_NAME, properties, requestJson.toJSONString().getBytes());
             while (true) {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery();
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {

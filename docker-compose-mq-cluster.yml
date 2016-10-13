@@ -1,0 +1,33 @@
+version: '2'
+services:
+  daemon:
+    image: kresten/skycave
+    command: daemon -Dcpf=rabbitmq-compose.cpf
+    depends_on:
+    - mongo
+    - rabbit1
+    - rabbit2
+  rabbit1:
+    image: rabbitmq:3-management
+    hostname: rabbit1
+    container_name: rabbit1
+    environment:
+    - RABBITMQ_ERLANG_COOKIE=cluster
+    ports:
+    - "5672:5672"
+    - "15672:15672"
+  rabbit2:
+    image: rabbitmq:3-management
+    hostname: rabbit2
+    container_name: rabbit2
+    links:
+    - rabbit1
+    environment:
+    - RABBITMQ_ERLANG_COOKIE=cluster
+    ports:
+    - "5673:5672"
+    - "15673:15672"
+  mongo:
+    image: mongo:3.3.15
+    container_name: mongo
+    command: --smallfiles --noprealloc

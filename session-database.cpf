@@ -1,0 +1,11 @@
+< mongo-storage.cpf
+
+# === Configure for rabbitmq connections
+SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitClientRequestHandler
+SKYCAVE_SERVERREQUESTHANDLER_IMPLEMENTATION = cloud.cave.config.socket.RabbitServerRequestHandler
+
+# === Configure for server to run with rabbitmq
+SKYCAVE_APPSERVER = localhost:5672
+
+SKYCAVE_PLAYERSESSIONCACHE_IMPLEMENTATION = cloud.cave.server.MongoSessionCache
+SKYCAVE_PLAYERSESSIONCACHESERVER = notused:0

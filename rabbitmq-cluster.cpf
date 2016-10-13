@@ -1,0 +1,4 @@
+# use the operations config
+< rabbitmq-operations.cpf
+
+SKYCAVE_APPSERVER = localhost:5672
