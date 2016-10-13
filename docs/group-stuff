@@ -6,10 +6,6 @@ Nice docker remove all cmd: docker rm `docker ps --no-trunc -aq`
 
 Run commands: docker exec *container_name*
 
-Construct Docker-image from Dockerfile: docker build -t *navn* .
-
-
-
 For replica sets in mongoDb I used:
 http://www.sohamkamani.com/blog/2016/06/30/docker-mongo-replica-set/
 

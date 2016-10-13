@@ -56,4 +56,18 @@ public class TestSubscriptionAvailability {
         assertThat(login.getResultCode(), is(LoginResult.LOGIN_SUCCESS));
     }
 
+    @Test
+    public void shouldFailToLoginWithWrongPass() {
+        login = cave.login(loginName, "123");
+        assertThat(login.getResultCode(), is(LoginResult.LOGIN_FAILED_SERVER_ERROR));
+        sabSub.setState(SaboteurSubscriptionAvailability.State.AVAILABLE);
+        login = cave.login(loginName, "123");
+        String id = login.getPlayer().getID();
+        cave.logout(id);
+        assertThat(login.getResultCode(), is(LoginResult.LOGIN_SUCCESS));
+        sabSub.setState(SaboteurSubscriptionAvailability.State.UNAVAILABLE);
+        login = cave.login(loginName, "12");
+        assertThat(login.getResultCode(), is(LoginResult.LOGIN_FAILED_SERVER_ERROR));
+    }
+
 }

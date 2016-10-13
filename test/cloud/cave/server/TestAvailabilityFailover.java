@@ -119,5 +119,4 @@ public class TestAvailabilityFailover {
         exception.expect(CaveStorageException.class);
         player.execute("JumpCommand", "(0,1,0)");
     }
-
 }

@@ -35,48 +35,28 @@ public class MongoSessionCache implements PlayerSessionCache {
     public Player get(String playerID) {
         //Using the approach Henrik talks about in TestLoadBalancing
         //Just creating a new player object, although he says "Never call this constructor directly"
-        PlayerRecord playerRec = storage.getPlayerByID(playerID);
-        return new PlayerServant(playerRec.getPlayerID(), objectManager);
+        //When the constructor is called, it automatically refreshes from storage
+        return new PlayerServant(playerID, objectManager);
     }
 
     @Override
     public void add(String playerID, Player player) {
-        //upserting new Players in the database
-        PlayerServant playerServant = new PlayerServant(playerID, objectManager);
-        PlayerRecord playerRecord = new PlayerRecord(
-                new SubscriptionRecord(
-                        playerServant.getID(),
-                        playerServant.getName(),
-                        playerServant.getGroupName(),
-                        playerServant.getRegion()),
-                playerServant.getPosition(),
-                playerServant.getSessionID());
-        storage.updatePlayerRecord(playerRecord);
+        //no need
     }
 
     @Override
     public void remove(String playerID) {
-        //if sessionId is null, it means the player is not active
-        PlayerServant playerServant = new PlayerServant(playerID, objectManager);
-        PlayerRecord playerRecord = new PlayerRecord(
-                new SubscriptionRecord(
-                        playerServant.getID(),
-                        playerServant.getName(),
-                        playerServant.getGroupName(),
-                        playerServant.getRegion()),
-                playerServant.getPosition(),
-                null);
-        storage.updatePlayerRecord(playerRecord);
+        //no need
     }
 
     @Override
     public void pushPosition(String playerID, Point3 position) {
-        //no need I'd say
+        //backtrack is disabled
     }
 
     @Override
     public Point3 popPosition(String playerID) {
-        //undo is disabled
+        //backtrack is disabled
         return null;
     }
 
