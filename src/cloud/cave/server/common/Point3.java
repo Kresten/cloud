@@ -2,6 +2,8 @@ package cloud.cave.server.common;
 
 import cloud.cave.domain.Direction;
 
+import java.io.Serializable;
+
 /**
  * This class represents a position in the 3D space of the cave (x,y,z) as a
  * normal Cartesian coordinate system. It is mostly used for conversion to and
@@ -10,7 +12,7 @@ import cloud.cave.domain.Direction;
  * @author Henrik Baerbak Christensen, Aarhus University.
  * 
  */
-public class Point3 {
+public class Point3 implements Serializable {
 
   private int x;
   private int y;

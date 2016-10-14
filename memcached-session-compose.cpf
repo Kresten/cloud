@@ -1,0 +1,12 @@
+# use the operations config
+< rabbitmq-compose.cpf
+
+SKYCAVE_APPSERVER = rabbit:5672
+
+# = Player session cache - Memcached cache
+SKYCAVE_PLAYERSESSIONCACHE_IMPLEMENTATION = cloud.cave.server.MemcachedSessionCache
+SKYCAVE_PLAYERSESSIONCACHESERVER = memcached:11211
+
+# = Inspector implementation - defaults to the simplest in memory one
+SKYCAVE_INSPECTOR_IMPLEMENTATION = cloud.cave.server.MemcachedInspector
+SKYCAVE_INSPECTORSERVER = memcached:11211

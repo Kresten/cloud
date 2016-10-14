@@ -1,0 +1,35 @@
+version: '2'
+services:
+  daemon1:
+    image: kresten/skycave
+    command: daemon -Dcpf=memcached-session-compose.cpf
+    container_name: daemon1
+    depends_on:
+    - mongo
+    - rabbit
+    - memcached
+  daemon2:
+    image: kresten/skycave
+    command: daemon -Dcpf=memcached-session-compose.cpf
+    container_name: daemon2
+    depends_on:
+    - mongo
+    - rabbit
+    - memcached
+  rabbit:
+    image: rabbitmq:3-management
+    hostname: rabbit
+    container_name: rabbit
+    ports:
+    - "5672:5672"
+    - "15672:15672"
+  mongo:
+    image: mongo:3.3.15
+    container_name: mongo
+    command: --smallfiles --noprealloc
+  #telnet `boot2docker ip` 11211
+  memcached:
+    image: memcached:1.4.31
+    container_name: memcached
+    ports:
+    - "11211:11211"

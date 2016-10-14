@@ -1,5 +1,7 @@
 Crunch3 tag: Europium501_Latvia587
 
+PlayerId: 57d15f8da7b11b000529fd1f
+
 DigitalOcean IP: 138.68.67.18
 
 Nice docker remove all cmd: docker rm `docker ps --no-trunc -aq`
@@ -17,6 +19,5 @@ for clustering rabbitMq use the compose file
 rabbit2 rabbitmqctl stop_app
 rabbit2 rabbitmqctl join_cluster rabbit@rabbit1
 rabbit2 rabbitmqctl start_app
-
 
 rabbitmqctl set_policy ha-skycave "^skycave\." '{"ha-mode":"all"}'

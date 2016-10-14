@@ -1,0 +1,4 @@
+# use the operations config
+< memcached-session-compose.cpf
+
+SKYCAVE_APPSERVER = localhost:5672

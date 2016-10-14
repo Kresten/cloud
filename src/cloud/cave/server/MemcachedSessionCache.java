@@ -64,8 +64,10 @@ public class MemcachedSessionCache implements PlayerSessionCache {
 
         // Pop top element, handle empty stack gracefully
         Point3 p = null;
-        if (!stack.empty()) { p = stack.pop();  }
-        memcacheClient.set(playerID, EXPIRE_TIME, stack);
+        if (!stack.empty()) {
+            p = stack.pop();
+            memcacheClient.set(playerID, EXPIRE_TIME, stack);
+        }
         return p;
     }
 
