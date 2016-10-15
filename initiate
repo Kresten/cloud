@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for (( rs = 1; rs < 2; rs++ )); do
+echo "Intializing replica 1 set"
+replicate="rs.initiate(); sleep(1000); cfg = rs.conf(); cfg.members[0].host = \"mongors1\"; rs.reconfig(cfg); rs.add(\"mongors2\"); rs.add(\"mongors3\"); rs.status();"
+docker exec -it mongors1 bash -c "echo '${replicate}' | mongo"
+done
+echo "DONE"
+
+sleep 2
+
+commands="sh.addShard('rs1/mongors1:27018'); sh.enableSharding("CaveStorage"); sh.shardCollection.("CaveStorage.rooms", { position : "hashed"} ); sh.status(); "
+docker exec -it mongos1 bash -c "echo '${commands}' | mongo "
