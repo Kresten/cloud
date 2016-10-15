@@ -5,10 +5,7 @@ import cloud.cave.broker.Marshaling;
 import cloud.cave.broker.MarshalingKeys;
 import cloud.cave.broker.StatusCode;
 import cloud.cave.config.ObjectManager;
-import cloud.cave.domain.Cave;
-import cloud.cave.domain.Login;
-import cloud.cave.domain.LoginResult;
-import cloud.cave.domain.LogoutResult;
+import cloud.cave.domain.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -45,10 +42,13 @@ public class CaveDispatcher implements Dispatcher {
                     String playerId = result.getPlayer().getID();
                     String playerName = result.getPlayer().getName();
                     String sessionId = result.getPlayer().getSessionID();
+                    Region region = result.getPlayer().getRegion();
+                    String position = result.getPlayer().getPosition();
+                    String roomDesc = result.getPlayer().getShortRoomDescription();
                     // add the player to the cache
                     // cache.add(sessionId, result.getPlayer());
                     reply = Marshaling.createValidReplyWithReturnValue(result
-                            .getResultCode().toString(), playerId, playerName, sessionId);
+                            .getResultCode().toString(), playerId, playerName, sessionId, region.name(), position, roomDesc);
                 } else {
                     // The player id is set to "" as we do not know
                     reply = Marshaling.createValidReplyWithReturnValue(result

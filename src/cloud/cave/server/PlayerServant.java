@@ -304,6 +304,9 @@ public class PlayerServant implements Player {
         // as the command may update any aspect of the player' data
         // and as we cache it here locally, invalidate the caching
         refreshFromStorage();
+        //We update the saved values on the client (Chunky)
+        reply.put("position", getPosition());
+        reply.put("roomDesc", getShortRoomDescription());
 
         return reply;
     }

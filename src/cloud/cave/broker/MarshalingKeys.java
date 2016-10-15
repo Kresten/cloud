@@ -41,9 +41,6 @@ public class MarshalingKeys {
   // List of player method keys
   public static final String MOVE_METHOD_KEY = PLAYER_TYPE_PREFIX+"move";
   public static final String BACKTRACK_METHOD_KEY = PLAYER_TYPE_PREFIX+"backtrack";;
-  public static final String GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-short-room-description";
-  public static final String GET_POSITION_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-position";
-  public static final String GET_REGION_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-region";
   public static final String GET_PLAYERS_HERE_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-players-here";
   public static final String GET_EXITSET_METHOD_KEY = PLAYER_TYPE_PREFIX+"get-exit-set";
   public static final String DIG_ROOM_METHOD_KEY = PLAYER_TYPE_PREFIX+"dig-room";

@@ -78,8 +78,11 @@ public class CaveProxy implements Cave, ClientProxy {
         String playerID = returnValueArray.get(0).toString();
         String playerName = returnValueArray.get(1).toString();
         String sessionId = returnValueArray.get(2).toString();
+        String region = returnValueArray.get(3).toString();
+        String position = returnValueArray.get(4).toString();
+        String roomDesc = returnValueArray.get(5).toString();
 
-        Player player = new PlayerProxy(crh, playerID, playerName, sessionId);
+        Player player = new PlayerProxy(crh, playerID, playerName, sessionId, Region.valueOf(region), position, roomDesc);
         result = new LoginRecord(player, loginResult);
       } else {
         result = new LoginRecord(loginResult);

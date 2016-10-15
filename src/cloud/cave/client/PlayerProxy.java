@@ -30,10 +30,13 @@ import cloud.cave.domain.*;
  */
 public class PlayerProxy implements Player, ClientProxy, Requestor {
     private ClientRequestHandler crh;
-
     private String playerID;
+
     private String playerName;
     private String sessionID;
+    private Region region;
+    private String position;
+    private String roomDesc;
 
     private JSONObject requestJson;
 
@@ -41,19 +44,29 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
      * DO NOT USE THIS CONSTRUCTOR DIRECTLY (except in unit tests perhaps). Create
      * the player proxy configured with the relevant request handler and
      * properties.
-     *
      * @param crh        the client request handler to communicate with the server based
      *                   player instance
      * @param playerID   id of the player
      * @param playerName name of the player
      * @param sessionID  id of the session initiated by this player's login
+     * @param region     region of the player
+     * @param position   the first position of the player
+     * @param roomDesc   the description of the first room
      */
     PlayerProxy(ClientRequestHandler crh,
-                String playerID, String playerName, String sessionID) {
+                String playerID,
+                String playerName,
+                String sessionID,
+                Region region,
+                String position,
+                String roomDesc) {
+        this.crh = crh;
         this.playerID = playerID;
         this.playerName = playerName;
         this.sessionID = sessionID;
-        this.crh = crh;
+        this.region = region;
+        this.position = position;
+        this.roomDesc = roomDesc;
     }
 
     @Override
@@ -63,16 +76,7 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
 
     @Override
     public String getShortRoomDescription() {
-        // Build the request object
-        requestJson = createRequestObject(MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY, "");
-        // send the request over the connector and retrieve the reply object
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        if (replyJson.get(MarshalingKeys.ERROR_CODE_KEY).equals(StatusCode.SERVER_FAILED_TO_LOAD_COMMAND)) {
-            return (String) replyJson.get(MarshalingKeys.ERROR_MSG_KEY);
-        }
-        // and finally, demarshal the returned value
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        return asString;
+        return roomDesc;
     }
 
     @Override
@@ -106,12 +110,7 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
 
     @Override
     public Region getRegion() {
-        requestJson = createRequestObject(MarshalingKeys.GET_REGION_METHOD_KEY,
-                "");
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        Region unboxed = Region.valueOf(asString);
-        return unboxed;
+        return region;
     }
 
     @Override
@@ -124,6 +123,11 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
         }
         String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
         boolean unboxed = Boolean.parseBoolean(asString);
+
+        JSONArray array = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
+        position = (String) array.get(0);
+        roomDesc = (String) array.get(1);
+
         return unboxed;
     }
 
@@ -131,9 +135,13 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
     public boolean backtrack() {
         requestJson = createRequestObject(MarshalingKeys.BACKTRACK_METHOD_KEY, "");
         JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY)
-                .toString();
+        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
         boolean unboxed = Boolean.parseBoolean(asString);
+
+        JSONArray array = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
+        position = (String) array.get(0);
+        roomDesc = (String) array.get(1);
+
         return unboxed;
     }
 
@@ -154,11 +162,7 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
 
     @Override
     public String getPosition() {
-        requestJson = createRequestObject(MarshalingKeys.GET_POSITION_METHOD_KEY, null);
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String positionString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-
-        return positionString;
+        return position;
     }
 
     @Override
@@ -204,7 +208,7 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
     @Override
     public void addMessage(String message) {
         JSONObject requestJson = createRequestObject(MarshalingKeys.ADD_MESSAGE_METHOD_KEY, message);
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
+        requestAndAwaitReply(requestJson);
     }
 
     @Override
@@ -229,6 +233,8 @@ public class PlayerProxy implements Player, ClientProxy, Requestor {
         JSONObject requestJson =
                 Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.EXECUTE_METHOD_KEY, commandName, parameters);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
+        position = (String) replyJson.get("position");
+        roomDesc = (String) replyJson.get("roomDesc");
         return replyJson;
     }
 

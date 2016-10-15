@@ -146,11 +146,9 @@ public class TestInspector {
 
     // cfgLog.stream().forEach(System.out::println);
 
-    assertThat(cfgLog.size(), is(6));
-    assertThat(cfgLog.get(1), containsString("[REQUEST] {\"method\":\"player-get-short-room-description\","));
-    assertThat(cfgLog.get(2), containsString("\"reply\":\"You are standing at the end of a road before"));
-    assertThat(cfgLog.get(3), containsString("[REQUEST] {\"method\":\"player-get-players-here\","));
-    assertThat(cfgLog.get(4), containsString("\"reply-tail\":[\"Mikkel\"],"));
+    assertThat(cfgLog.size(), is(4));
+    assertThat(cfgLog.get(1), containsString("[REQUEST] {\"method\":\"player-get-players-here\","));
+    assertThat(cfgLog.get(2), containsString("\"reply-tail\":[\"Mikkel\"],"));
   }
   
   @Test

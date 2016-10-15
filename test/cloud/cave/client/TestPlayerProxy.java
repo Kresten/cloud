@@ -225,19 +225,21 @@ public class TestPlayerProxy {
     assertThat( p2second.move(Direction.WEST), is(true));
     
     // Verify the other methods that do not cache things locally - sigh - cannot avoid a lot of duplicated code...
-    try {
-      p2.getPosition();
-      fail("The first client must throw an exception when attempting any further calls");
-    } catch( PlayerSessionExpiredException e ) {
-      assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
-    }
 
-    try {
-      p2.getShortRoomDescription();
-      fail("The first client must throw an exception when attempting any further calls");
-    } catch( PlayerSessionExpiredException e ) {
-      assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
-    }
+    //Get Position and roomDescription are now stored locally
+//    try {
+//      p2.getPosition();
+//      fail("The first client must throw an exception when attempting any further calls");
+//    } catch( PlayerSessionExpiredException e ) {
+//      assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
+//    }
+//
+//    try {
+//      p2.getShortRoomDescription();
+//      fail("The first client must throw an exception when attempting any further calls");
+//    } catch( PlayerSessionExpiredException e ) {
+//      assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
+//    }
 
     try {
       p2.getLongRoomDescription();
@@ -260,12 +262,13 @@ public class TestPlayerProxy {
       assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
     }
 
-    try {
-      p2.getRegion();
-      fail("The first client must throw an exception when attempting any further calls");
-    } catch( PlayerSessionExpiredException e ) {
-      assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
-    }
+    //Get Region is now stored locally
+//    try {
+//      p2.getRegion();
+//      fail("The first client must throw an exception when attempting any further calls");
+//    } catch( PlayerSessionExpiredException e ) {
+//      assertThat( e.getMessage(), containsString("The session for player user-003 is no longer valid"));
+//    }
 
     try {
       p2.digRoom(Direction.DOWN, "You are in the wonder room");

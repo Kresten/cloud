@@ -52,7 +52,8 @@ public class TestNetworkLoad {
     // Verify the number of requests sent, long description
     // actually require three network calls to compute
     // its answer
-    assertThat(spy.getRequestsSent(), is(3));
+    //Not anymore (Chunky interface), short room description is stored on the client now
+    assertThat(spy.getRequestsSent(), is(2));
   }
 
 }

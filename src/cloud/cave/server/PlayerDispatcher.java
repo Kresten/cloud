@@ -52,24 +52,8 @@ public class PlayerDispatcher implements Dispatcher {
                                 + player.getSessionID() + ").");
             }
 
-            // === SHORT ROOM
-            if (methodKey
-                    .equals(MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY)) {
-                reply = Marshaling.createValidReplyWithReturnValue(player
-                        .getShortRoomDescription());
-            }
-            // === REGION
-            else if (methodKey.equals(MarshalingKeys.GET_REGION_METHOD_KEY)) {
-                reply = Marshaling.createValidReplyWithReturnValue(player.getRegion()
-                        .toString());
-            }
-            // === POSITION
-            else if (methodKey.equals(MarshalingKeys.GET_POSITION_METHOD_KEY)) {
-                reply = Marshaling
-                        .createValidReplyWithReturnValue(player.getPosition());
-            }
             // === PLAYERS HERE
-            else if (methodKey.equals(MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY)) {
+            if (methodKey.equals(MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY)) {
                 List<String> playersHere = player.getPlayersHere();
                 String[] asArray = new String[playersHere.size()];
                 playersHere.toArray(asArray);
@@ -96,15 +80,19 @@ public class PlayerDispatcher implements Dispatcher {
                 // move(direction)
                 Direction direction = Direction.valueOf(parameter1);
                 boolean isValid = player.move(direction);
+                String position = player.getPosition();
+                String roomDesc = player.getShortRoomDescription();
 
-                reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
+                reply = Marshaling.createValidReplyWithReturnValue("" + isValid, position, roomDesc);
             }
             // === BACKTRACK
             else if (methodKey.equals(MarshalingKeys.BACKTRACK_METHOD_KEY)) {
                 // backtrack()
                 boolean isValid = player.backtrack();
+                String position = player.getPosition();
+                String roomDesc = player.getShortRoomDescription();
 
-                reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
+                reply = Marshaling.createValidReplyWithReturnValue("" + isValid, position, roomDesc);
             }
             // === DIG
             else if (methodKey.equals(MarshalingKeys.DIG_ROOM_METHOD_KEY)) {
